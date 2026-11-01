@@ -1,0 +1,10 @@
+// 不要这样传：值是快照
+// 组件只运行一次，theme() 之后不会重新求值
+<ThemeContext.Provider value={theme()}>
+  {props.children}
+</ThemeContext.Provider>
+
+// 正确做法：传 accessor
+<ThemeContext.Provider value={theme}>
+  {props.children}
+</ThemeContext.Provider>

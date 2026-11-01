@@ -1,0 +1,6 @@
+# 使用 TypeScript 模板
+npx degit solidjs/templates/ts my-app
+
+cd my-app
+bun install
+bun run dev

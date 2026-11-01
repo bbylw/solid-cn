@@ -1,0 +1,19 @@
+import { createStore } from "solid-js/store";
+
+const [state, setState] = createStore({
+  userCount: 2,
+  users: [
+    { id: 1, name: "林岚", online: true },
+    { id: 2, name: "周野", online: false },
+  ],
+});
+
+// 直接定位到叶子属性，只更新这一处
+setState("users", 0, "online", false);
+setState("userCount", (n) => n + 1);
+
+// 数组整体替换
+setState("users", (list) => [
+  ...list,
+  { id: 3, name: "许冬", online: true },
+]);

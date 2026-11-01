@@ -1,0 +1,10 @@
+import { createEffect, createSignal } from "solid-js";
+
+const [query, setQuery] = createSignal("");
+
+createEffect(() => {
+  // 自动订阅 query；每次变化都会重新执行
+  console.log("当前查询词：", query());
+});
+
+setQuery("signals"); // 输出：当前查询词：signals

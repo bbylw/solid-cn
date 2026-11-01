@@ -1,0 +1,12 @@
+import { onMount } from "solid-js";
+
+function Canvas() {
+  let canvas!: HTMLCanvasElement;
+
+  onMount(() => {
+    const context = canvas.getContext("2d");
+    context?.fillRect(0, 0, 80, 80);
+  });
+
+  return <canvas ref={canvas} width={160} height={90} />;
+}

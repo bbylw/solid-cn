@@ -1,0 +1,31 @@
+import { createContext, createSignal, useContext, type JSX } from "solid-js";
+
+type Theme = "light" | "dark";
+
+// 默认值设为 undefined，方便检查调用方是否放错了位置
+const ThemeContext = createContext<() => Theme>();
+
+export function ThemeProvider(props: { children: JSX.Element }) {
+  const [theme, setTheme] = createSignal<Theme>("light");
+
+  // 把 signal 本身放进 context，而不是 theme()
+  return (
+    <ThemeContext.Provider value={theme}>
+      {props.children}
+    </ThemeContext.Provider>
+  );
+}
+
+export function useTheme() {
+  const theme = useContext(ThemeContext);
+  if (!theme) {
+    throw new Error("useTheme 必须在 ThemeProvider 内使用");
+  }
+  return theme;
+}
+
+// 消费方调用 accessor，主题变化时这里会更新
+function ThemeBadge() {
+  const theme = useTheme();
+  return <span>当前主题：{theme()}</span>;
+}

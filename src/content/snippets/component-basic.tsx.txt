@@ -1,0 +1,8 @@
+import type { JSX } from "solid-js";
+
+function Welcome(props: { name: string }): JSX.Element {
+  return <h1>你好，{props.name}</h1>;
+}
+
+// 使用
+// <Welcome name="林岚" />

@@ -1,0 +1,23 @@
+import { createSignal } from "solid-js";
+import { template, delegateEvents, insert, render } from "solid-js/web";
+
+// 静态 HTML 在编译期被提取，只创建一次
+const _tmpl$ = template(`<button>点击次数：<!> · 双倍：<!></button>`);
+
+function Counter() {
+  const [count, setCount] = createSignal(0);
+  const doubleCount = () => count() * 2;
+
+  return (() => {
+    const _el$ = _tmpl$();
+    _el$.$$click = () => setCount((c) => c + 1);
+
+    // 只有这两个文本节点会被精确更新
+    insert(_el$, count);
+    insert(_el$, doubleCount);
+    return _el$;
+  })();
+}
+
+render(Counter, document.getElementById("app")!);
+delegateEvents(["click"]);

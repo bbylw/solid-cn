@@ -1,0 +1,13 @@
+import { createStore, produce } from "solid-js/store";
+
+const [state, setState] = createStore({
+  draft: { title: "", tags: [] as string[] },
+});
+
+// 需要连续写入时，用 produce 在一次更新中完成
+setState(
+  produce((s) => {
+    s.draft.title = "细粒度响应式";
+    s.draft.tags.push("solid", "signals");
+  })
+);

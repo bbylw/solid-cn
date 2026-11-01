@@ -1,0 +1,16 @@
+import { createStore } from "solid-js/store";
+
+const [state, setState] = createStore({
+  todos: [
+    { id: 1, title: "读快速开始", done: true },
+    { id: 2, title: "写第一个信号", done: true },
+    { id: 3, title: "理解派生值", done: false },
+  ],
+});
+
+// 只更新第三项的完成状态
+setState("todos", 2, "done", true);
+
+// 新增与删除通过新数组完成
+setState("todos", (list) => [...list, { id: 4, title: "读 store 文档", done: false }]);
+setState("todos", (list) => list.filter((todo) => todo.id !== 1));

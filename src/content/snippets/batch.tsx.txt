@@ -1,0 +1,11 @@
+import { batch, createSignal } from "solid-js";
+
+const [width, setWidth] = createSignal(0);
+const [height, setHeight] = createSignal(0);
+
+batch(() => {
+  setWidth(320);
+  setHeight(180);
+});
+
+// 两个更新在同一轮中生效，依赖它们的代码只运行一次

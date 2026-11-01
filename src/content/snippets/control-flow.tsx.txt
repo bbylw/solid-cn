@@ -1,0 +1,21 @@
+import { For, Match, Show, Switch } from "solid-js";
+
+<Show when={user()} fallback={<p>请先登录</p>}>
+  <UserCard user={user()!} />
+</Show>
+
+<For each={todos()}>
+  {(todo) => <TodoItem todo={todo} />}
+</For>
+
+<Switch fallback={<p>未知状态</p>}>
+  <Match when={status() === "loading"}>
+    <Spinner />
+  </Match>
+  <Match when={status() === "error"}>
+    <ErrorPanel />
+  </Match>
+  <Match when={status() === "ready"}>
+    <Content />
+  </Match>
+</Switch>

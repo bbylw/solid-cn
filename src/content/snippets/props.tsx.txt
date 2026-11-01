@@ -1,0 +1,21 @@
+import type { Component, JSX } from "solid-js";
+
+type ButtonProps = {
+  tone?: "solid" | "ghost";
+  children: JSX.Element;
+  onClick?: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent>;
+};
+
+export const Button: Component<ButtonProps> = (props) => (
+  <button
+    class="btn"
+    classList={{ "btn-solid": props.tone !== "ghost", "btn-ghost": props.tone === "ghost" }}
+    onClick={props.onClick}
+  >
+    {props.children}
+  </button>
+);
+
+// 不要在组件参数里解构 props：
+// const Button = ({ tone, children }) => ...
+// 解构会丢失 getter 的响应性。

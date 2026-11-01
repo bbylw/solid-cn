@@ -1,0 +1,21 @@
+import { createSignal, onCleanup, onMount } from "solid-js";
+
+function Clock() {
+  const [now, setNow] = createSignal(new Date());
+
+  const timer = setInterval(() => setNow(new Date()), 1000);
+
+  // 组件从界面移除时清除定时器
+  onCleanup(() => clearInterval(timer));
+
+  return <time>{now().toLocaleTimeString("zh-CN")}</time>;
+}
+
+function Panel() {
+  onMount(() => {
+    // 只在客户端挂载后执行一次
+    console.log("Panel 已挂载");
+  });
+
+  return <section>面板</section>;
+}

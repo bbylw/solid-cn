@@ -1,0 +1,13 @@
+import { renderToStream } from "solid-js/web";
+import App from "./App";
+
+export async function streamResponse() {
+  const { readable, writable } = new TransformStream();
+
+  // renderToStream 返回 pipe / pipeTo，而不是现成的 ReadableStream
+  renderToStream(() => <App />).pipeTo(writable);
+
+  return new Response(readable, {
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+}

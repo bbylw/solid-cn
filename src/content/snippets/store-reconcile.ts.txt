@@ -1,0 +1,14 @@
+import { createStore, reconcile } from "solid-js/store";
+
+type Todo = { id: number; title: string; done: boolean };
+
+const [todos, setTodos] = createStore({
+  items: [] as Todo[],
+});
+
+async function refresh() {
+  const next: Todo[] = await fetch("/api/todos").then((res) => res.json());
+
+  // 按 id 对齐新旧数据，保留未变化项的引用
+  setTodos("items", reconcile(next, { key: "id" }));
+}

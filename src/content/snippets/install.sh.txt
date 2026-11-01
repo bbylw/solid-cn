@@ -1,0 +1,5 @@
+# 运行时
+npm install solid-js
+
+# JSX 编译（Babel 方案）
+npm install --save-dev babel-preset-solid

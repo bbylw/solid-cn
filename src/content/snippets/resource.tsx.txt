@@ -1,0 +1,29 @@
+import { createResource, createSignal, Show, Suspense } from "solid-js";
+
+async function fetchUser(id: number) {
+  const res = await fetch(`/api/users/${id}`);
+  if (!res.ok) throw new Error("加载失败");
+  return res.json();
+}
+
+// 局部方案：Show 自己处理加载状态
+function UserProfile(props: { id: number }) {
+  const [user] = createResource(() => props.id, fetchUser);
+
+  return (
+    <Show when={user()} fallback={<p>加载中……</p>}>
+      {(data) => <h2>{data().name}</h2>}
+    </Show>
+  );
+}
+
+// 边界方案：交给最近的 Suspense 统一处理加载状态
+function UserPage() {
+  const [id] = createSignal(1);
+
+  return (
+    <Suspense fallback={<p>加载中……</p>}>
+      <UserProfile id={id()} />
+    </Suspense>
+  );
+}

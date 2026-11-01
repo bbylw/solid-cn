@@ -1,0 +1,7 @@
+# 1. 用官方 TypeScript 模板创建项目
+npx degit solidjs/templates/ts my-app
+
+# 2. 安装依赖并启动开发服务器
+cd my-app
+npm install
+npm run dev

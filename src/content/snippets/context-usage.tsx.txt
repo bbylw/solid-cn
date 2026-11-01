@@ -1,0 +1,20 @@
+import { createSignal, useContext, type JSX } from "solid-js";
+import { ThemeContext, type Theme } from "./theme-context";
+
+// Provider 提供 signal 本身，而不是 theme()
+export function Root(props: { children: JSX.Element }) {
+  const [theme] = createSignal<Theme>("light");
+
+  return (
+    <ThemeContext.Provider value={theme}>
+      {props.children}
+    </ThemeContext.Provider>
+  );
+}
+
+// 消费方调用 accessor，主题变化时这里会更新
+function ThemeBadge() {
+  const theme = useContext(ThemeContext);
+  if (!theme) throw new Error("缺少 ThemeContext");
+  return <span>当前主题：{theme()}</span>;
+}

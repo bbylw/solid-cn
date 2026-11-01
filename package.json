@@ -1,0 +1,29 @@
+{
+  "name": "solid-zh",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Solid 中文文档与官网",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^1.0.1",
+    "lucide-solid": "^1.66.0",
+    "solid-js": "^1.9.18"
+  },
+  "devDependencies": {
+    "@shikijs/types": "^4.5.0",
+    "@types/node": "^26.6.6",
+    "cheerio": "^1.2.0",
+    "shiki": "^4.5.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vite-plugin-solid": "^2.11.15"
+  }
+}

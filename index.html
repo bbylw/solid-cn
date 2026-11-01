@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Solid 文档：一个不使用虚拟 DOM、以细粒度响应式驱动真实 DOM 更新的声明式 JavaScript UI 库。"
+    />
+    <meta name="theme-color" content="#f2eee3" />
+    <link rel="icon" type="image/svg+xml" href="/brand/solid-mark.svg" />
+    <title>Solid 文档 · 细粒度响应式 UI 库</title>
+    <script>
+      (() => {
+        try {
+          const stored = localStorage.getItem("solid-zh-theme");
+          const dark = stored
+            ? stored === "dark"
+            : window.matchMedia("(prefers-color-scheme: dark)").matches;
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+        } catch {
+          document.documentElement.dataset.theme = "light";
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/index.tsx"></script>
+  </body>
+</html>

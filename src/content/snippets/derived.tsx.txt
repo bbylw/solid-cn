@@ -1,0 +1,12 @@
+import { createMemo, createSignal } from "solid-js";
+
+const [price, setPrice] = createSignal(128);
+const [quantity, setQuantity] = createSignal(2);
+
+const total = createMemo(() => price() * quantity());
+
+// total() 只在 price 或 quantity 变化时重新计算
+console.log(total()); // 256
+
+setPrice(99);
+console.log(total()); // 198

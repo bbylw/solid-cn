@@ -1,0 +1,13 @@
+import { createEffect, createSignal, on, untrack } from "solid-js";
+
+const [userId, setUserId] = createSignal(1);
+const [token, setToken] = createSignal("local-token");
+
+createEffect(
+  on(userId, (id) => {
+    // userId 变化时重新执行；on 默认在创建时也会先执行一次，
+    // 传 { defer: true } 可跳过首次。
+    // token 在这里只是读取当前值，不建立订阅。
+    console.log("加载用户", id, "凭证", untrack(token));
+  })
+);

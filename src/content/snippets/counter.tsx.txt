@@ -1,0 +1,14 @@
+import { createSignal } from "solid-js";
+
+function Counter() {
+  const [count, setCount] = createSignal(0);
+  const doubleCount = () => count() * 2;
+
+  console.log("函数体只运行一次……");
+
+  return (
+    <button onClick={() => setCount((c) => c + 1)}>
+      点击次数：{count()} · 双倍：{doubleCount()}
+    </button>
+  );
+}

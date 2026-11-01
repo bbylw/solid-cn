@@ -1,0 +1,24 @@
+import { createEffect, createSignal, onCleanup } from "solid-js";
+
+export function SearchField() {
+  const [query, setQuery] = createSignal("");
+
+  createEffect(() => {
+    const controller = new AbortController();
+
+    fetch(`/api/search?q=${encodeURIComponent(query())}`, {
+      signal: controller.signal,
+    });
+
+    // 下一次查询开始前，中止上一次请求
+    onCleanup(() => controller.abort());
+  });
+
+  return (
+    <input
+      value={query()}
+      onInput={(e) => setQuery(e.currentTarget.value)}
+      placeholder="搜索文档"
+    />
+  );
+}

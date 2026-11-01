@@ -1,0 +1,95 @@
+:root {
+  color-scheme: light;
+
+  --font-sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
+    "Source Han Sans SC", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas,
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC",
+    "Source Han Sans SC", system-ui, sans-serif;
+
+  --paper: #f2eee3;
+  --paper-2: #e9e4d6;
+  --surface: #f8f5ec;
+  --ink: #14212a;
+  --ink-soft: #3c4a52;
+  --muted: #5d6a70;
+  --line: #d5cebd;
+  --line-strong: #aba28e;
+
+  --accent: #2f639b;
+  --accent-strong: #244f7d;
+  --accent-soft: #dfe8f0;
+  --accent-ink: #f6f1e4;
+  --focus: #1f5f9a;
+
+  --night: #0b151c;
+  --night-2: #0f1d26;
+  --night-3: #152733;
+  --night-ink: #eee7d8;
+  --night-muted: #94a5ad;
+  --night-line: #263b46;
+  --cobalt: #1c4064;
+  --cobalt-2: #163650;
+  --cobalt-ink: #f2eee3;
+
+  --code-bg: #0d1923;
+  --code-surface: #122430;
+  --code-ink: #dbe4ea;
+  --code-muted: #7c93a3;
+  --code-line: #243d4d;
+  --code-line-num: #425b6a;
+
+  --success: #2c6a4d;
+  --danger: #a3452f;
+
+  --shell: 1320px;
+  --gutter: clamp(20px, 4.5vw, 64px);
+  --header-h: 64px;
+  --radius: 4px;
+  --radius-lg: 8px;
+  --shadow: 0 1px 0 rgba(20, 33, 42, 0.04), 0 24px 48px -32px rgba(20, 33, 42, 0.4);
+  --shadow-lg: 0 40px 80px -40px rgba(20, 33, 42, 0.45);
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --paper: #0f171d;
+  --paper-2: #15212a;
+  --surface: #17242e;
+  --ink: #ebe4d5;
+  --ink-soft: #c1c8c7;
+  --muted: #95a2a8;
+  --line: #293a44;
+  --line-strong: #465862;
+
+  --accent: #85bae9;
+  --accent-strong: #aed4f4;
+  --accent-soft: #1a3041;
+  --accent-ink: #0b1720;
+  --focus: #9ccaf2;
+
+  --night: #0a1218;
+  --night-2: #0e1b23;
+  --night-3: #142530;
+  --night-ink: #efe8da;
+  --night-muted: #93a3ab;
+  --night-line: #243640;
+  --cobalt: #163a5b;
+  --cobalt-2: #113049;
+  --cobalt-ink: #f2eee3;
+
+  --code-bg: #09131a;
+  --code-surface: #0f202b;
+  --code-ink: #dbe4ea;
+  --code-muted: #8096a5;
+  --code-line: #223a49;
+  --code-line-num: #405867;
+
+  --success: #88c4a4;
+  --danger: #e9a08d;
+
+  --shadow: 0 1px 0 rgba(0, 0, 0, 0.3), 0 24px 48px -32px rgba(0, 0, 0, 0.8);
+  --shadow-lg: 0 40px 80px -40px rgba(0, 0, 0, 0.9);
+}

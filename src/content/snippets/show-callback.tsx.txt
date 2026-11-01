@@ -1,0 +1,3 @@
+<Show when={user()}>
+  {(current) => <UserCard user={current()} />}
+</Show>

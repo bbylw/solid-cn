@@ -1,0 +1,11 @@
+const [query, setQuery] = createSignal("");
+const [focused, setFocused] = createSignal(false);
+
+<input
+  value={query()}
+  onInput={(event) => setQuery(event.currentTarget.value)}
+  onFocus={() => setFocused(true)}
+  onBlur={() => setFocused(false)}
+  classList={{ "is-active": focused() }}
+  aria-label="搜索文档"
+/>
