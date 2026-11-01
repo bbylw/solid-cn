@@ -13,11 +13,8 @@ import {
 import { Dynamic } from "solid-js/web";
 import { DocsShell } from "../components/DocsShell";
 import { getDoc } from "../data/docs";
+import { prefersReducedMotion } from "../lib/prefers";
 import NotFound from "./NotFound";
-
-const reduceMotion = () =>
-  typeof matchMedia !== "undefined" &&
-  matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function DocSkeleton() {
   return (
@@ -57,7 +54,7 @@ function DocView(props: {
     const target = document.getElementById(id);
     if (!target) return;
     target.scrollIntoView({
-      behavior: reduceMotion() ? "auto" : "smooth",
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
       block: "start",
     });
     history.replaceState(null, "", `#${id}`);

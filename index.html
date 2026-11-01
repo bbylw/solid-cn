@@ -7,17 +7,50 @@
       name="description"
       content="Solid 文档：一个不使用虚拟 DOM、以细粒度响应式驱动真实 DOM 更新的声明式 JavaScript UI 库。"
     />
+    <link rel="canonical" href="https://solid.ndjp.net/" />
     <meta name="theme-color" content="#f2eee3" />
+    <!-- 社交分享（站点级默认值；各页面运行时会覆盖 title 与 description） -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Solid 中文" />
+    <meta property="og:title" content="Solid 中文 · 细粒度响应式 JavaScript UI 库" />
+    <meta
+      property="og:description"
+      content="从信号、派生值到 Store、SSR，用中文理解细粒度响应式，并在交互演示里直接看到依赖图如何工作。"
+    />
+    <meta property="og:url" content="https://solid.ndjp.net/" />
+    <meta property="og:image" content="https://solid.ndjp.net/og-default.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Solid 中文文档：把界面更新，精确到信号。"
+    />
+    <meta property="og:locale" content="zh_CN" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Solid 中文 · 细粒度响应式 JavaScript UI 库" />
+    <meta
+      name="twitter:description"
+      content="从信号、派生值到 Store、SSR，用中文理解细粒度响应式，并在交互演示里直接看到依赖图如何工作。"
+    />
+    <meta name="twitter:image" content="https://solid.ndjp.net/og-default.png" />
     <link rel="icon" type="image/svg+xml" href="/brand/solid-mark.svg" />
     <title>Solid 文档 · 细粒度响应式 UI 库</title>
     <script>
       (() => {
+        const THEME_COLOR = { light: "#f2eee3", dark: "#0f171d" };
+        const syncThemeColor = (theme) => {
+          document
+            .querySelector('meta[name="theme-color"]')
+            ?.setAttribute("content", THEME_COLOR[theme]);
+        };
         try {
           const stored = localStorage.getItem("solid-zh-theme");
           const dark = stored
             ? stored === "dark"
             : window.matchMedia("(prefers-color-scheme: dark)").matches;
-          document.documentElement.dataset.theme = dark ? "dark" : "light";
+          const theme = dark ? "dark" : "light";
+          document.documentElement.dataset.theme = theme;
+          syncThemeColor(theme);
         } catch {
           document.documentElement.dataset.theme = "light";
         }

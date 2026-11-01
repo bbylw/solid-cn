@@ -1,4 +1,4 @@
-import { createSignal, For, Show, type JSX } from "solid-js";
+import { createSignal, For, onCleanup, Show, type JSX } from "solid-js";
 
 export type ShikiSnippet = {
   html: string;
@@ -26,6 +26,7 @@ async function copyText(text: string) {
 export function CopyButton(props: { code: string; label?: string }) {
   const [copied, setCopied] = createSignal(false);
   let timer: number | undefined;
+  onCleanup(() => window.clearTimeout(timer));
 
   const onCopy = async () => {
     const ok = await copyText(props.code);

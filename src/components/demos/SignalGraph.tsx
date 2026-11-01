@@ -1,10 +1,7 @@
 import { createSignal, For, on, createEffect } from "solid-js";
+import { prefersReducedMotion } from "../../lib/prefers";
 
 type LogEntry = { seq: number; value: string };
-
-const reducedMotion = () =>
-  typeof matchMedia !== "undefined" &&
-  matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export function SignalGraph() {
   const [count, setCount] = createSignal(3);
@@ -41,7 +38,7 @@ export function SignalGraph() {
     on(
       count,
       () => {
-        if (reducedMotion()) return;
+        if (prefersReducedMotion()) return;
         const pulse = (
           element: SVGGElement | SVGPathElement | undefined,
           strong: boolean

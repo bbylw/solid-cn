@@ -1,14 +1,11 @@
 const fs = require("fs");
 const path = require("path");
-const { chromium } = require(
-  "C:/Users/bbylw/AppData/Local/npm-cache/_npx/13ab0715f9f30c2e/node_modules/playwright-core"
-);
+const { chromium, chromeExecutable } = require("./_browser");
 
 const ROOT = path.resolve(__dirname, "../..");
 const OUT = path.join(ROOT, ".research", "visual");
 const BASE = "https://solid.localhost";
-const EXECUTABLE =
-  "C:/Users/bbylw/AppData/Local/ms-playwright/chromium-1248/chrome-win64/chrome.exe";
+const EXECUTABLE = chromeExecutable();
 
 const chapters = [
   "getting-started",
