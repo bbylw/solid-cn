@@ -1,0 +1,21 @@
+import { createEffect, createRoot, createSignal, onCleanup, runWithOwner } from "solid-js";
+
+// 2.0：嵌套的 createRoot 归外层所有者所有，外层销毁时它一起被销毁
+createRoot((dispose) => {
+  const [count, setCount] = createSignal(0);
+  const timer = setInterval(() => setCount((c) => c + 1), 1000);
+
+  createEffect(() => count(), (value) => console.log("count =", value));
+  onCleanup(() => clearInterval(timer));
+
+  // dispose() 仍然保留，可以用它提前单独拆掉这个 root
+});
+
+// 需要真正「活到进程结束」的单例时，显式脱离所有者
+export const session = runWithOwner(null, () => {
+  const [token, setToken] = createSignal("");
+  return { token, setToken };
+});
+
+// 之后：session.token() 读取，session.setToken("…") 写入，
+// 它不属于任何组件，也就不会跟着组件一起被回收

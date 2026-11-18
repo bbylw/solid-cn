@@ -1,20 +1,26 @@
-import { createSignal, onCleanup, onMount } from "solid-js";
+import { createSignal, onSettled } from "solid-js";
 
 function Clock() {
   const [now, setNow] = createSignal(new Date());
 
-  const timer = setInterval(() => setNow(new Date()), 1000);
-
-  // 组件从界面移除时清除定时器
-  onCleanup(() => clearInterval(timer));
+  // 2.0 用 onSettled 取代 onMount：界面稳定后跑一次，
+  // 返回的函数在销毁时执行，等价于 onMount + onCleanup
+  onSettled(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  });
 
   return <time>{now().toLocaleTimeString("zh-CN")}</time>;
 }
 
 function Panel() {
-  onMount(() => {
-    // 只在客户端挂载后执行一次
-    console.log("Panel 已挂载");
+  // 需要 DOM 或浏览器 API 的准备工作，都放这里，不放组件函数体顶层
+  onSettled(() => {
+    console.log("面板宽度", document.body.clientWidth);
+
+    const onResize = () => console.log("重新测量");
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   });
 
   return <section>面板</section>;

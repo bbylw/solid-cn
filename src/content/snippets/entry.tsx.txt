@@ -1,4 +1,8 @@
-import { render } from "solid-js/web";
+import { render } from "@solidjs/web";
 import App from "./App";
 
-render(() => <App />, document.getElementById("app")!);
+const root = document.getElementById("app");
+if (!root) throw new Error("找不到 #app 挂载点");
+
+// render 返回 dispose：需要拆掉整个渲染根时调用它
+render(() => <App />, root);

@@ -1,0 +1,19 @@
+import { createSignal, onFlush } from "solid-js";
+
+function Menu(props: { onSelect?: (id: string) => Promise<void> }) {
+  const [open, setOpen] = createSignal(false);
+
+  const select = (id: string) => {
+    // 同一帧里的写入默认一起生效：如果 onSelect 发起了导航或重新取数，
+    // setOpen(false) 会被它一起按住，菜单迟迟关不掉。
+    onFlush(() => setOpen(false)); // 让这次写入单独成帧，立刻关菜单
+    void props.onSelect?.(id);
+  };
+
+  return (
+    <button onClick={() => select("a")}>{open() ? "已选择" : "选项 A"}</button>
+  );
+}
+
+// onFlush 从事件处理器或 apply 里调用；写在组件体或计算里，
+// dev 会警告 ON_FLUSH_IN_OWNED_SCOPE，那种场合改用 onSettled。

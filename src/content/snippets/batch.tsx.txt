@@ -1,11 +1,15 @@
-import { batch, createSignal } from "solid-js";
+import { createSignal, flush } from "solid-js";
 
 const [width, setWidth] = createSignal(0);
 const [height, setHeight] = createSignal(0);
 
-batch(() => {
-  setWidth(320);
-  setHeight(180);
-});
+setWidth(320);
+setHeight(180);
 
-// 两个更新在同一轮中生效，依赖它们的代码只运行一次
+width(); // 0 —— 写入还没提交
+flush(); // 手动把这一帧的更新立刻落地
+width(); // 320
+height(); // 180
+
+// 不调用 flush 也一样会生效：当前微任务结束时运行时自己提交，
+// 同一帧里的这两次写入始终作为一次更新被看到，不需要 batch。

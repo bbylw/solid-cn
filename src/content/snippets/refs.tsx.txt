@@ -1,12 +1,32 @@
-import { onMount } from "solid-js";
+import { onSettled } from "solid-js";
 
 function Canvas() {
   let canvas!: HTMLCanvasElement;
 
-  onMount(() => {
+  // 1.x 的 onMount → 2.0 的 onSettled：渲染稳定后运行，此时 ref 已经赋值，
+  // 返回的函数在销毁时执行
+  onSettled(() => {
     const context = canvas.getContext("2d");
     context?.fillRect(0, 0, 80, 80);
+
+    const onResize = () => context?.clearRect(0, 0, 160, 90);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   });
 
   return <canvas ref={canvas} width={160} height={90} />;
+}
+
+function Tracker() {
+  let box!: HTMLDivElement;
+
+  // 回调 ref 是 unowned 的：里面 getOwner() 为 null，不要写 onCleanup
+  // 生命周期工作留在组件体的 onSettled 里
+  onSettled(() => {
+    const onDown = () => box.classList.add("active");
+    box.addEventListener("pointerdown", onDown);
+    return () => box.removeEventListener("pointerdown", onDown);
+  });
+
+  return <div ref={(el) => (box = el)} class="box" />;
 }

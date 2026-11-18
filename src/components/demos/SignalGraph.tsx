@@ -1,4 +1,4 @@
-import { createSignal, For, on, createEffect } from "solid-js";
+import { createEffect, createSignal, For } from "solid-js";
 import { prefersReducedMotion } from "../../lib/prefers";
 
 type LogEntry = { seq: number; value: string };
@@ -18,11 +18,14 @@ export function SignalGraph() {
   const odd = () => Math.abs(count()) % 2 === 1;
   const parityText = () => (odd() ? "奇数" : "偶数");
 
+  // 2.0 里写入只负责排队：先算出下一个值，再写信号、再记日志，
+  // 这样日志记的是这一帧真正会看到的新值，而不是尚未提交的旧值。
   const update = (delta: number) => {
-    setCount((value) => value + delta);
+    const next = count() + delta;
+    setCount(next);
     sequence += 1;
     setLog((entries) =>
-      [{ seq: sequence, value: String(count()) }, ...entries].slice(0, 3)
+      [{ seq: sequence, value: String(next) }, ...entries].slice(0, 3)
     );
   };
 
@@ -34,32 +37,31 @@ export function SignalGraph() {
     );
   };
 
+  // 没有 on 助手了：compute 负责追踪 count，apply 负责动画，defer 让首帧不脉冲
   createEffect(
-    on(
-      count,
-      () => {
-        if (prefersReducedMotion()) return;
-        const pulse = (
-          element: SVGGElement | SVGPathElement | undefined,
-          strong: boolean
-        ) => {
-          if (!element) return;
-          element.animate(
-            strong
-              ? [{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }]
-              : [{ opacity: 1 }, { opacity: 0.55 }, { opacity: 1 }],
-            { duration: 520, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
-          );
-        };
-        pulse(sourceNode, false);
-        pulse(derivedNode, false);
-        pulse(parityNode, false);
-        pulse(textNode, false);
-        pulse(badgeNode, false);
-        hotEdges.forEach((edge) => pulse(edge, true));
-      },
-      { defer: true }
-    )
+    () => count(),
+    () => {
+      if (prefersReducedMotion()) return;
+      const pulse = (
+        element: SVGGElement | SVGPathElement | undefined,
+        strong: boolean
+      ) => {
+        if (!element) return;
+        element.animate(
+          strong
+            ? [{ opacity: 0 }, { opacity: 1 }, { opacity: 0 }]
+            : [{ opacity: 1 }, { opacity: 0.55 }, { opacity: 1 }],
+          { duration: 520, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
+        );
+      };
+      pulse(sourceNode, false);
+      pulse(derivedNode, false);
+      pulse(parityNode, false);
+      pulse(textNode, false);
+      pulse(badgeNode, false);
+      hotEdges.forEach((edge) => pulse(edge, true));
+    },
+    { defer: true }
   );
 
   return (
@@ -232,7 +234,7 @@ export function SignalGraph() {
             </div>
           )}
         </For>
-        <span class="signal-log-idle">每次写入都会同步通知订阅者</span>
+        <span class="signal-log-idle">写入先排队，微任务结束时一起通知订阅者</span>
       </div>
     </section>
   );

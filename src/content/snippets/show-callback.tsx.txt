@@ -1,3 +1,14 @@
-<Show when={user()}>
-  {(current) => <UserCard user={current()} />}
+// 默认：回调收到窄化后的 accessor，真值之间复用同一批节点
+<Show when={user()} fallback={<Login />}>
+  {(u) => <Profile user={u()} />}
 </Show>
+
+// keyed：回调收到原始值，值换身份时整段内容重建
+<Show when={user()} keyed fallback={<Login />}>
+  {(u) => <Profile user={u} />}
+</Show>
+
+// Switch / Match 同样支持函数子节点
+<Switch fallback={<Guest />}>
+  <Match when={user()}>{(u) => <Profile user={u()} />}</Match>
+</Switch>

@@ -1,20 +1,59 @@
-import { createSignal, useContext, type JSX } from "solid-js";
-import { ThemeContext, type Theme } from "./theme-context";
+import {
+  createContext,
+  createStore,
+  For,
+  useContext,
+  type ParentProps,
+  type Store,
+} from "solid-js";
 
-// Provider 提供 signal 本身，而不是 theme()
-export function Root(props: { children: JSX.Element }) {
-  const [theme] = createSignal<Theme>("light");
+type Todo = { id: number; title: string; done: boolean };
+type TodoActions = { add(title: string): void; toggle(id: number): void };
+type TodosCtx = readonly [Store<Todo[]>, TodoActions];
 
-  return (
-    <ThemeContext.Provider value={theme}>
-      {props.children}
-    </ThemeContext.Provider>
-  );
+const TodosContext = createContext<TodosCtx>();
+
+// 状态在组件里创建：SSR 下每个请求各有一份，Provider 负责拥有和销毁
+// 模块作用域只留给常量（和 createContext 这一行本身）
+export function TodosProvider(props: ParentProps) {
+  const [todos, setTodos] = createStore<Todo[]>([]);
+
+  const value: TodosCtx = [
+    todos,
+    {
+      add: (title) =>
+        setTodos((s) => {
+          s.push({ id: s.length + 1, title, done: false });
+        }),
+      toggle: (id) =>
+        setTodos((s) => {
+          for (const todo of s) if (todo.id === id) todo.done = !todo.done;
+        }),
+    },
+  ];
+
+  return <TodosContext value={value}>{props.children}</TodosContext>;
 }
 
-// 消费方调用 accessor，主题变化时这里会更新
-function ThemeBadge() {
-  const theme = useContext(ThemeContext);
-  if (!theme) throw new Error("缺少 ThemeContext");
-  return <span>当前主题：{theme()}</span>;
+// Provider 可以嵌套，最近的生效；后代里直接 useContext，拿到的就是 TodosCtx
+function TodoList() {
+  const [todos, { add, toggle }] = useContext(TodosContext);
+
+  return (
+    <>
+      <button onClick={() => add("读 store 文档")}>新增</button>
+      <ul>
+        <For each={todos}>
+          {(todo) => (
+            <li>
+              <button onClick={() => toggle(todo.id)}>
+                {todo.done ? "完成" : "未完成"}
+              </button>
+              {todo.title}
+            </li>
+          )}
+        </For>
+      </ul>
+    </>
+  );
 }

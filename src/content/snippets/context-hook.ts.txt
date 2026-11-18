@@ -1,12 +1,29 @@
-import { useContext } from "solid-js";
-import { ThemeContext } from "./theme-context";
+import { createContext, useContext } from "solid-js";
 
-export function useTheme() {
-  const theme = useContext(ThemeContext);
+type Session = { user: string; locale: string };
 
-  if (!theme) {
-    throw new Error("useTheme 必须在 ThemeProvider 内使用");
-  }
+// 2.0：无默认值的 context 类型就是 Session 本身
+const SessionContext = createContext<Session>();
 
-  return theme;
+export function Dashboard() {
+  // 不需要 useSession 包装钩子：类型已经是 Session，不是 Session | undefined
+  const session = useContext(SessionContext);
+
+  // 没有 Provider 时运行时抛 ContextNotFoundError；
+  // dev 的消息会说清命中哪种情况，创建时传 name 还能点名是哪个 context
+  return session.user;
 }
+
+// 1.x 到处是这种“判空再抛”的包装，纯粹为了把 T | undefined 收窄成 T
+// const useSession = () => {
+//   const s = useContext(SessionContext);
+//   if (!s) throw new Error("缺少 Provider");
+//   return s;
+// };
+
+// undefined 永远不是 context 的值：它表示“没提供”
+// 可缺省的 context 用 null 当空值
+const PanelContext = createContext<string | null>(null);
+
+const panel = useContext(PanelContext); // 没有 Provider 时是 null
+const enabled = panel !== null;

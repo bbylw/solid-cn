@@ -1,0 +1,23 @@
+import { createEffect, createSignal } from "solid-js";
+
+const [id, setId] = createSignal(1);
+
+createEffect(
+  () => fetchUser(id()), // compute 里的异步工作也算图的一部分
+  {
+    effect: (user) => {
+      show(user);
+    },
+    // 只接 compute 阶段与上游异步来源抛出的错误；
+    // apply 里自己代码的错误，请就地 try/catch
+    error: (err, cleanup) => {
+      console.error("加载失败：", err);
+      cleanup(); // 这一轮的清理照常执行
+    },
+  }
+);
+
+setId(2); // 换一个来源，失败的错误同样走到 error
+
+// 没有 error 时，compute 的错误只被记录一次，effect 跳过这一轮，
+// 不会带崩整个应用；要交给界面兜底，用 <Errored> 包住这段子树。

@@ -1,0 +1,14 @@
+import { createMemo, createSignal, flush } from "solid-js";
+
+const [count, setCount] = createSignal(0);
+
+setCount((c) => c + 1); // 更新函数
+count(); // 仍是 0：写入要到微任务冲刷后才可见
+flush(); // 立刻冲刷（测试里几乎每次断言前都要）
+count(); // 1
+
+const doubled = createMemo(() => count() * 2); // 只读派生
+const [size, setSize] = createSignal(() => 12); // 可写派生（函数形式）
+
+const rows = createMemo(() => loadRows(), { equals: (a, b) => a.id === b.id });
+const late = createMemo(() => expensive(), { lazy: true }); // 首次读取才算

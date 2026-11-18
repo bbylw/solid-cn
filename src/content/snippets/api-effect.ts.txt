@@ -1,0 +1,33 @@
+import { createEffect, onFlush, onSettled } from "solid-js";
+
+// 两段式：compute 负责追踪，apply 负责副作用（可返回清理函数）
+createEffect(
+  () => count(),
+  (value, previous) => {
+    document.title = String(value);
+    const onResize = () => layout(value);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }
+);
+
+// 跳过首次执行
+createEffect(() => count(), (v) => log(v), { defer: true });
+
+// 计算阶段出错时走 error 分支
+createEffect(() => fetchUser(id()), {
+  effect: (user) => render(user),
+  error: (err, cleanup) => {
+    cleanup();
+    console.error(err);
+  }
+});
+
+// 组件级挂载 + 卸载（替代 1.x 的 onMount / onCleanup）
+onSettled(() => {
+  const timer = setInterval(tick, 1000);
+  return () => clearInterval(timer);
+});
+
+// 让一次写入不被别的过渡拖住
+onFlush(() => setOpen(false));

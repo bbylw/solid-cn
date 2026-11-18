@@ -1,21 +1,35 @@
-import type { Component, JSX } from "solid-js";
+import { createSignal, type Element } from "solid-js";
+import type { JSX } from "@solidjs/web";
 
 type ButtonProps = {
   tone?: "solid" | "ghost";
-  children: JSX.Element;
+  children?: Element;
   onClick?: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent>;
 };
 
-export const Button: Component<ButtonProps> = (props) => (
-  <button
-    class="btn"
-    classList={{ "btn-solid": props.tone !== "ghost", "btn-ghost": props.tone === "ghost" }}
-    onClick={props.onClick}
-  >
-    {props.children}
-  </button>
-);
+// 保留 props.xxx 这种属性访问：读取发生在 JSX 表达式里，才会跟着重新取值
+function Button(props: ButtonProps) {
+  return (
+    <button
+      class={{ "btn-solid": props.tone !== "ghost", "btn-ghost": props.tone === "ghost" }}
+      onClick={props.onClick}
+    >
+      {props.children}
+    </button>
+  );
+}
 
-// 不要在组件参数里解构 props：
-// const Button = ({ tone, children }) => ...
-// 解构会丢失 getter 的响应性。
+const [count, setCount] = createSignal(0);
+
+// 调用处在 JSX 边界上把信号读成值，传下去的是值而不是访问器
+function App() {
+  return (
+    <Button tone="solid" onClick={() => setCount((value) => value + 1)}>
+      已点击 {count()} 次
+    </Button>
+  );
+}
+
+// 不要这样写：
+// function Button({ tone, children }) { … }   解构把值固化成快照，开发构建会告警
+// <Button count={count} />                      子组件收到的是函数，不是数字

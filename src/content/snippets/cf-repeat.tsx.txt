@@ -1,0 +1,19 @@
+import { Repeat } from "solid-js";
+
+// 骨架屏：只需要固定数量的槽位，不必构造数组
+<Repeat count={6}>{(i) => <RowSkeleton />}</Repeat>
+
+// 与 store 搭配：i 只是位置，细粒度更新来自 store 本身的读取
+<Repeat count={rows.list.length}>
+  {(i) => <Row name={rows.list[i].name} done={rows.list[i].done} />}
+</Repeat>
+
+// 窗口化：from 是起始偏移，count 是渲染的条数（索引为 from … from + count - 1）
+<Repeat count={visibleCount()} from={start()}>
+  {(i) => <Row index={i} />}
+</Repeat>
+
+// count 归零时渲染 fallback
+<Repeat count={rows.list.length} fallback={<p>暂无数据</p>}>
+  {(i) => <Row index={i} />}
+</Repeat>

@@ -1,0 +1,22 @@
+import { createMemo, createSignal, isPending, Loading, Show } from "solid-js";
+
+function Search(props: { query: string }) {
+  const [page, setPage] = createSignal(1);
+  const results = createMemo(() => searchApi(props.query, page()));
+  const updating = () => isPending(() => results());
+
+  return (
+    // on 是依赖清单：query 或 page 一变，边界就重新落回 fallback。
+    // 不写 on 时，边界会保留旧内容直到新数据落地。
+    <Loading fallback={<ResultsSkeleton />} on={[props.query, page()]}>
+      <Show when={updating()}>
+        <p class="hint">正在更新……</p>
+      </Show>
+      <Results rows={results()} />
+      <button onClick={() => setPage((p) => p + 1)}>下一页</button>
+    </Loading>
+  );
+}
+
+// 首次加载由 Loading 负责；之后的“有变化在途”交给 isPending。
+// isPending 会真的执行一次读取，所以它必须待在同一条 Loading 边界里。

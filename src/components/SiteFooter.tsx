@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router";
 import { For } from "solid-js";
 import {
   DISCORD_URL,
@@ -48,7 +47,7 @@ const columns = [
       { label: "在线演练场", href: PLAYGROUND_URL },
       {
         label: "交互式教程",
-        href: "https://www.solidjs.com/tutorial/introduction_basics",
+        href: "https://docs.solidjs.com/tutorial",
       },
     ],
   },
@@ -88,10 +87,10 @@ export function SiteFooter() {
         </div>
         <div class="footer-bottom">
           <span>
-            <A href="/docs/api">API 速查</A>
-            <A href={GITHUB_URL} target="_blank" rel="noreferrer">
+            <a href="/docs/api">API 速查</a>
+            <a href={GITHUB_URL} target="_blank" rel="noreferrer">
               源码与勘误
-            </A>
+            </a>
           </span>
         </div>
       </div>
@@ -100,11 +99,14 @@ export function SiteFooter() {
 }
 
 function ShowLink(props: { href: string; children: string }) {
-  if (props.href.startsWith("/")) {
-    return <A href={props.href}>{props.children}</A>;
-  }
+  // 路由 2.0 没有 A 组件：站内链接就是普通 <a href>
+  const external = () => !props.href.startsWith("/");
   return (
-    <a href={props.href} target="_blank" rel="noreferrer">
+    <a
+      href={props.href}
+      target={external() ? "_blank" : undefined}
+      rel={external() ? "noreferrer" : undefined}
+    >
       {props.children}
     </a>
   );

@@ -1,0 +1,41 @@
+import { createProjection, createSignal, createStore } from "solid-js";
+
+type Todo = { id: string; title: string };
+
+const [todos] = createStore({
+  items: [
+    { id: "a", title: "写第一个信号" },
+    { id: "b", title: "读 store 文档" },
+  ] as Todo[],
+});
+
+const [activeId, setActiveId] = createSignal("a");
+
+// 可写派生 store：derive 改草稿，只有真正变了的键会通知读取方
+// 这就是 1.x createSelector 想解决的问题（选中项变化不必叫醒所有行）
+const [active, setActive] = createStore<Record<string, boolean>>((draft) => {
+  for (const todo of todos.items) draft[todo.id] = todo.id === activeId();
+}, {});
+
+// 之后选中项变了：只有 a、b 两个键各通知一次，读其他键的代码不重跑
+setActiveId("b");
+
+// 可写形式还能自己补一笔；下一次源变化时，草稿里保留什么由 derive 决定
+setActive((s) => {
+  s.loading = true;
+});
+
+// 只读版本：createProjection，返回的值按 key 对齐进结果
+const visible = createProjection(
+  () => todos.items.filter((todo) => active[todo.id]),
+  [] as Todo[],
+  { key: "id" }
+);
+
+// derive 也可以是 async 的：结果落地前它保持 pending，读取要放在 <Loading> 边界里
+const fromServer = createProjection(
+  async () => (await fetch("/api/todos")).json(),
+  [] as Todo[],
+  { key: "id" }
+);
+

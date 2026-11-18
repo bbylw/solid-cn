@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router";
 import { Title, Meta } from "@solidjs/meta";
 import { createSignal, For } from "solid-js";
 import {
@@ -32,19 +31,27 @@ const features = [
   },
   {
     title: "声明式的数据模型",
-    desc: "信号、memo 与 effect 构成一张可推理的依赖图，状态变化沿着订阅关系流动。",
+    desc: "信号、memo 与 store 都从 solid-js 导出，构成一张可推理的依赖图，状态变化沿着订阅关系流动。",
   },
   {
     title: "组件只运行一次",
     desc: "组件是普通的 JavaScript 函数，只负责搭建视图，不需要每次渲染都重新执行。",
   },
   {
-    title: "自动依赖追踪",
-    desc: "在跟踪作用域里读取信号就会自动订阅，不需要手写依赖数组，也不会遗漏。",
+    title: "自动依赖追踪，读写分离",
+    desc: "在跟踪作用域里读取信号就会自动订阅，不需要手写依赖数组；effect 拆成 compute 与 apply 两段，副作用写在 apply。",
+  },
+  {
+    title: "微任务批处理",
+    desc: "同一批写入在微任务结束时一起落地，读取会等到那一帧；需要立刻同步时再调用 flush()。",
+  },
+  {
+    title: "一流的异步",
+    desc: "任何计算都能返回 Promise 或异步迭代器，<Loading> 是未就绪的边界；乐观原语配合 action() 组织变更。",
   },
   {
     title: "现代框架能力齐备",
-    desc: "JSX、Fragment、Context、Portal、Suspense、流式 SSR、渐进式水合与错误边界。",
+    desc: "JSX、Fragment、Context、Portal、流式 SSR 与渐进式水合，错误由 <Errored> 结构化地接住。",
   },
   {
     title: "调试贴近浏览器",
@@ -56,7 +63,7 @@ const features = [
   },
   {
     title: "面向 Web Component",
-    desc: "可以把 Solid 组件包装成自定义元素，也能编写自己的渲染器，把库带到别的平台。",
+    desc: "可以把 Solid 组件包装成自定义元素，也能用 @solidjs/universal 编写自己的渲染器，把库带到别的平台。",
   },
 ];
 
@@ -104,7 +111,7 @@ export default function Home() {
           <div class="hero-copy">
             <p class="hero-kicker">
               <span class="marker" aria-hidden="true" />
-              <span class="mono">SOLID 1.9</span>
+              <span class="mono">SOLID 2.0 正式版</span>
               <span class="sep" aria-hidden="true" />
               <span>用于构建用户界面的声明式 JavaScript 库</span>
             </p>
@@ -114,12 +121,13 @@ export default function Home() {
             </h1>
             <p class="hero-lede">
               Solid 不使用虚拟 DOM。JSX 被编译成真实的 DOM
-              节点，状态通过细粒度的依赖图传播。某段状态发生变化时，只有读取过它的代码会重新执行。
+              节点，状态通过细粒度的依赖图传播。某段状态发生变化时，只有读取过它的代码会重新执行；DOM
+              运行时也已经从 solid-js/web 拆到独立的 @solidjs/web。
             </p>
             <div class="hero-actions">
-              <A href="/docs/getting-started" class="btn btn-primary">
+              <a href="/docs/getting-started" class="btn btn-primary">
                 从快速开始读起
-              </A>
+              </a>
               <a
                 href={PLAYGROUND_URL}
                 target="_blank"
@@ -178,6 +186,7 @@ export default function Home() {
               <ul class="check-list">
                 <li>函数体只在挂载时执行一次，打印日志也只出现一次。</li>
                 <li>点击按钮只会通知读取了 <code>count</code> 的绑定。</li>
+                <li>写入只负责排队，同一批更新在微任务结束时一起提交。</li>
                 <li>派生值写成函数，读取时才订阅，组合起来像普通表达式。</li>
               </ul>
             </div>
@@ -225,7 +234,8 @@ export default function Home() {
               <h3>一次模板创建，之后只做局部赋值</h3>
               <p>
                 <code>template()</code> 返回真实的元素；<code>insert()</code>{" "}
-                把信号接到具体的文本节点。按钮上的两段动态文本各管各的，不会牵连整棵子树。
+                把信号接到具体的文本节点。这三个运行时函数都由{" "}
+                <code>@solidjs/web</code> 提供，按钮上的两段动态文本各管各的，不会牵连整棵子树。
               </p>
               <div class="compiler-list">
                 <div class="compiler-item">
@@ -234,7 +244,10 @@ export default function Home() {
                 </div>
                 <div class="compiler-item">
                   <span class="idx">02</span>
-                  <p>事件通过委托统一挂载，避免为每个按钮创建监听器。</p>
+                  <p>
+                    事件由 <code>delegateEvents(["click"])</code>{" "}
+                    统一代理，元素上只留下 <code>_$$click</code> 这样的字段。
+                  </p>
                 </div>
                 <div class="compiler-item">
                   <span class="idx">03</span>
@@ -291,9 +304,9 @@ export default function Home() {
               组件就是函数，渲染完全由你如何使用状态决定。Solid
               提倡声明式代码与读写分离，但不会用一套新的渲染规则挡住你。
             </p>
-            <A href="/docs/reactivity" class="inline-link">
+            <a href="/docs/reactivity" class="inline-link">
               读响应式模型
-            </A>
+            </a>
           </aside>
 
           <div class="ledger">
@@ -325,9 +338,9 @@ export default function Home() {
             <p class="section-lede" style={{ "margin-top": "16px" }}>
               按顺序读，会得到一套完整的响应式心智模型；也可以从任意一章进入，章节之间保留了必要的回链。
             </p>
-            <A href="/docs" class="btn btn-ghost btn-sm">
+            <a href="/docs" class="btn btn-ghost btn-sm">
               打开文档总览
-            </A>
+            </a>
           </div>
 
           <div class="chapter-columns">
@@ -337,10 +350,10 @@ export default function Home() {
                   <h3>{group.name}</h3>
                   <For each={group.docs}>
                     {(item) => (
-                      <A href={`/docs/${item.slug}`}>
+                      <a href={`/docs/${item.slug}`}>
                         <span class="num">{item.chapter}</span>
                         <span>{item.navTitle}</span>
-                      </A>
+                      </a>
                     )}
                   </For>
                 </div>
@@ -358,14 +371,17 @@ export default function Home() {
               几条命令，得到一个<span class="nowrap">完整的</span> Solid 工程。
             </h2>
             <p>
-              官方模板默认使用 Vite，自带 TypeScript、热更新与生产构建。下面的命令任选一种包管理器，创建后即可开始写第一个信号。
+              官方模板默认使用 Vite，自带 TypeScript、热更新与生产构建，2.0
+              正式版对应 <code>solid-v2</code> 系列。下面的命令任选一种包管理器，创建后即可开始写第一个信号；已有工程则直接装上{" "}
+              <code>solid-js</code> 与 <code>@solidjs/web</code>，再把构建插件换成{" "}
+              <code>@solidjs/vite-plugin</code>。
             </p>
             <div class="start-links">
-              <A href="/docs/getting-started" class="btn btn-on-cobalt">
+              <a href="/docs/getting-started" class="btn btn-on-cobalt">
                 查看快速开始
-              </A>
+              </a>
               <a
-                href="https://www.solidjs.com/tutorial/introduction_basics"
+                href="https://docs.solidjs.com/tutorial"
                 target="_blank"
                 rel="noreferrer"
                 class="start-link"
@@ -387,7 +403,7 @@ export default function Home() {
                     type="button"
                     role="tab"
                     class="tab"
-                    aria-selected={currentTerminal().id === tab.id}
+                    aria-selected={currentTerminal().id === tab.id ? "true" : "false"}
                     onClick={() => setTerminal(tab)}
                   >
                     {tab.label}
@@ -401,7 +417,7 @@ export default function Home() {
             </div>
             <div class="terminal-foot">
               <span>Vite + TypeScript 模板</span>
-              <span>Solid 1.9</span>
+              <span>Solid 2.0</span>
             </div>
           </div>
         </div>
@@ -445,7 +461,8 @@ export default function Home() {
               </div>
               <p class="community-note">
                 贡献方式不只有写代码：补一段示例、修一处文档、在 Discord
-                回答问题，都算。捐赠通过 Open Collective 进入项目账户。
+                回答问题，都算。捐赠通过 Open Collective 进入项目账户。仍在
+                1.x 上的项目，旧版文档留在 v1.solidjs.com。
               </p>
             </div>
 

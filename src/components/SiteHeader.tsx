@@ -1,17 +1,12 @@
-import { A } from "@solidjs/router";
 import { For, Show } from "solid-js";
-import Menu from "lucide-solid/icons/menu";
-import Moon from "lucide-solid/icons/moon";
-import Search from "lucide-solid/icons/search";
-import Sun from "lucide-solid/icons/sun";
-import X from "lucide-solid/icons/x";
+import { Menu, Moon, Search, Sun, X } from "./Icons";
 import { GITHUB_URL } from "../data/docs";
 import { setMenuOpen, setSearchOpen, menuOpen } from "../lib/ui-state";
 import { theme, toggleTheme } from "../lib/theme";
 
 const navItems = [
-  { href: "/", label: "首页", end: true },
-  { href: "/docs", label: "文档", end: true },
+  { href: "/", label: "首页" },
+  { href: "/docs", label: "文档" },
   { href: "/docs/getting-started", label: "快速开始" },
   { href: "/docs/api", label: "API" },
 ];
@@ -39,7 +34,7 @@ export function SiteHeader() {
   return (
     <header class="site-header">
       <div class="header-inner shell">
-        <A href="/" class="brand" aria-label="Solid 中文首页">
+        <a href="/" class="brand" aria-label="Solid 中文首页">
           <img
             src="/brand/solid-mark.svg"
             alt=""
@@ -48,15 +43,11 @@ export function SiteHeader() {
             height="26"
           />
           <span class="brand-name">Solid</span>
-        </A>
+        </a>
 
         <nav class="primary-nav" aria-label="主导航">
           <For each={navItems}>
-            {(item) => (
-              <A href={item.href} end={item.end}>
-                {item.label}
-              </A>
-            )}
+            {(item) => <a href={item.href}>{item.label}</a>}
           </For>
         </nav>
 
@@ -95,7 +86,7 @@ export function SiteHeader() {
             type="button"
             class="icon-btn menu-btn"
             onClick={() => setMenuOpen(!menuOpen())}
-            aria-expanded={menuOpen()}
+            aria-expanded={menuOpen() ? "true" : "false"}
             aria-controls="mobile-menu"
             aria-label={menuOpen() ? "关闭菜单" : "打开菜单"}
           >
@@ -123,20 +114,20 @@ export function SiteHeader() {
           <nav class="mobile-menu-nav" aria-label="移动端导航">
             <For each={navItems}>
               {(item) => (
-                <A href={item.href} end={item.end} onClick={() => setMenuOpen(false)}>
+                <a href={item.href} onClick={() => setMenuOpen(false)}>
                   {item.label}
-                </A>
+                </a>
               )}
             </For>
-            <A href="/docs/signals" onClick={() => setMenuOpen(false)}>
+            <a href="/docs/signals" onClick={() => setMenuOpen(false)}>
               信号与派生
-            </A>
-            <A href="/docs/stores" onClick={() => setMenuOpen(false)}>
+            </a>
+            <a href="/docs/stores" onClick={() => setMenuOpen(false)}>
               Store 状态
-            </A>
-            <A href="/docs/ssr" onClick={() => setMenuOpen(false)}>
+            </a>
+            <a href="/docs/ssr" onClick={() => setMenuOpen(false)}>
               SSR 与水合
-            </A>
+            </a>
           </nav>
           <div class="mobile-menu-foot">
             <span>Solid 中文学习站</span>

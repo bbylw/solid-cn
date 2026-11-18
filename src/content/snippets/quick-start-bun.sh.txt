@@ -1,5 +1,5 @@
-# 1. 用官方 TypeScript 模板创建项目
-bunx degit solidjs/templates/ts my-app
+# 1. 拉取 Solid 2.0 官方模板（basic：Vite + TS 客户端）
+bunx degit solidjs/templates/solid-v2/basic my-app
 
 # 2. 安装依赖并启动开发服务器
 cd my-app

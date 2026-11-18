@@ -1,13 +1,17 @@
-import { renderToStream } from "solid-js/web";
+// entry-server.tsx —— 流式版本
+import { renderToStream } from "@solidjs/web";
 import App from "./App";
 
-export async function streamResponse() {
-  const { readable, writable } = new TransformStream();
-
-  // renderToStream 返回 pipe / pipeTo，而不是现成的 ReadableStream
-  renderToStream(() => <App />).pipeTo(writable);
-
-  return new Response(readable, {
-    headers: { "Content-Type": "text/html; charset=utf-8" },
+// Web 标准运行时：readable 已经是 Response body 就绪的 Uint8Array 流
+export function handler(request: Request): Response {
+  const path = new URL(request.url).pathname;
+  const stream = renderToStream(() => <App path={path} />);
+  return new Response(stream.readable, {
+    headers: { "content-type": "text/html; charset=utf-8" },
   });
 }
+
+// Node 原生可写流：改用 pipe
+// renderToStream(() => <App path={req.url ?? "/"} />).pipe(res);
+// 需要 Promise 形式：改用 pipeTo
+// await renderToStream(() => <App path="/" />).pipeTo(writable);

@@ -1,0 +1,31 @@
+import { merge, omit, type Element } from "solid-js";
+
+type ChipProps = {
+  tone?: "solid" | "ghost";
+  size?: "sm" | "md";
+  class?: string;
+  children?: Element;
+};
+
+const defaults = { tone: "solid", size: "md" } as const;
+
+function Chip(props: ChipProps) {
+  // merge 取代 mergeProps：右边的源覆盖左边的默认值
+  const merged = merge(defaults, props);
+
+  // omit 取代 splitProps：把包装层自己吃掉的键去掉再转发给内层元素
+  const rest = omit(merged, "tone", "size", "class", "children");
+
+  return (
+    <span
+      class={["chip", { ghost: merged.tone === "ghost" }, merged.class]}
+      data-size={merged.size}
+      {...rest}
+    >
+      {merged.children}
+    </span>
+  );
+}
+
+// 注意：merge 里 undefined 是一个真实值，会覆盖默认值
+merge({ tone: "solid" }, { tone: undefined }); // → { tone: undefined }

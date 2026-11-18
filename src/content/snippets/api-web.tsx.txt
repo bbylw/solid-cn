@@ -1,0 +1,40 @@
+import {
+  clientOnly,
+  dynamic,
+  hydrate,
+  Portal,
+  render,
+  renderToStream,
+  renderToString,
+  httpStatus,
+  httpHeader
+} from "@solidjs/web";
+
+// 挂载与接管
+const dispose = render(() => <App />, document.getElementById("app")!);
+hydrate(() => <App />, document.getElementById("app")!);
+
+// 服务端：字符串 / 流
+const html = renderToString(() => <App />);
+const stream = renderToStream(() => <App />);
+new Response(stream.readable); // readable、pipe、pipeTo 三者只能用一个
+
+// 挂载点外的内容（服务端渲染时会抛错，需要时用 clientOnly 或 isServer 隔离）
+<Portal mount={document.body}>
+  <Modal />
+</Portal>;
+
+// 按条件选择组件：工厂形式，Component 身份稳定
+const Active = dynamic(() => (isEditing() ? Editor : Viewer));
+<Active value={value()} />;
+
+// 只在浏览器渲染的组件：服务端连 import 都不发起
+const Heavy = clientOnly(() => import("./Heavy"));
+<Heavy fallback={<Skeleton />} />;
+
+// SSR 期间为当前响应式作用域声明响应状态与头（客户端是空操作）
+function NotFound() {
+  httpStatus(404);
+  httpHeader("cache-control", "no-store");
+  return <h1>Not found</h1>;
+}

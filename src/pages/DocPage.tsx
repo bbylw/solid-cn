@@ -1,20 +1,29 @@
 import { useLocation, useParams } from "@solidjs/router";
-import { Title, Meta } from "@solidjs/meta";
+import { Meta, Title } from "@solidjs/meta";
 import {
   createEffect,
   createMemo,
-  createResource,
   createSignal,
-  ErrorBoundary,
-  onCleanup,
+  Errored,
+  Loading,
   Show,
-  Suspense,
+  type Accessor,
 } from "solid-js";
-import { Dynamic } from "solid-js/web";
+import { dynamic } from "@solidjs/web";
 import { DocsShell } from "../components/DocsShell";
 import { getDoc } from "../data/docs";
 import { prefersReducedMotion } from "../lib/prefers";
 import NotFound from "./NotFound";
+
+// <Errored> 的 fallback 收到的是错误访问器（2.0 改成 accessor），
+// 在 memo 里读一次再窄化类型
+function ErrorText(props: { err: Accessor<unknown> }) {
+  const message = createMemo(() => {
+    const error = props.err();
+    return error instanceof Error ? error.message : "未知错误";
+  });
+  return <p>{message()}</p>;
+}
 
 function DocSkeleton() {
   return (
@@ -45,7 +54,13 @@ function DocView(props: {
   doc: NonNullable<ReturnType<typeof getDoc>>;
 }) {
   const location = useLocation();
-  const [content] = createResource(async () => (await props.doc.load()).default);
+
+  // createResource 在 2.0 被移除。章节代码先在函数体里启动加载（不把 promise
+  // 留在 compute 中），再用异步 memo 解出默认导出；没就绪时由 <Loading> 显示骨架。
+  const module = props.doc.load();
+  const Page = createMemo(async () => (await module).default);
+  const Chapter = dynamic(Page);
+
   const [activeId, setActiveId] = createSignal(
     props.doc.headings[0]?.id ?? ""
   );
@@ -61,54 +76,69 @@ function DocView(props: {
     setActiveId(id);
   };
 
-  createEffect(() => {
-    if (!content()) return;
-
-    const elements = props.doc.headings
-      .map((heading) => document.getElementById(heading.id))
-      .filter((element): element is HTMLElement => element != null);
-    if (elements.length === 0) return;
-
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      const threshold = 122;
-      let current = elements[0].id;
-      for (const element of elements) {
-        if (element.getBoundingClientRect().top <= threshold) {
-          current = element.id;
+  // 滚动监听：compute 只等章节模块落地，测量与监听都放在 apply 里，
+  // 清理函数取代 1.x 的 onCleanup
+  createEffect(
+    async () => {
+      await module;
+      return props.doc.slug;
+    },
+    () => {
+      let frame = 0;
+      const update = () => {
+        frame = 0;
+        const elements = props.doc.headings
+          .map((heading) => document.getElementById(heading.id))
+          .filter((element): element is HTMLElement => element != null);
+        if (elements.length === 0) return;
+        const threshold = 122;
+        let current = elements[0].id;
+        for (const element of elements) {
+          if (element.getBoundingClientRect().top <= threshold) {
+            current = element.id;
+          }
         }
-      }
-      setActiveId(current);
-    };
-    const onScroll = () => {
-      if (frame !== 0) return;
-      frame = requestAnimationFrame(update);
-    };
+        setActiveId(current);
+      };
+      const onScroll = () => {
+        if (frame !== 0) return;
+        frame = requestAnimationFrame(update);
+      };
 
-    window.addEventListener("scroll", onScroll, { passive: true });
-    update();
-    onCleanup(() => {
-      window.removeEventListener("scroll", onScroll);
-      if (frame !== 0) cancelAnimationFrame(frame);
-    });
-  });
+      // 内容要等 <Loading> 揭示后才在文档里，量测推到下一帧
+      const mount = requestAnimationFrame(() => {
+        window.addEventListener("scroll", onScroll, { passive: true });
+        update();
+      });
 
-  createEffect(() => {
-    const loaded = content();
-    const hash = location.hash;
-    if (!loaded) return;
+      return () => {
+        cancelAnimationFrame(mount);
+        window.removeEventListener("scroll", onScroll);
+        if (frame !== 0) cancelAnimationFrame(frame);
+      };
+    }
+  );
 
-    requestAnimationFrame(() => {
-      if (hash) {
-        document.getElementById(hash.slice(1))?.scrollIntoView({
-          block: "start",
-        });
-      } else {
-        window.scrollTo({ top: 0 });
-      }
-    });
-  });
+  // hash 定位：追踪 location.hash，同样等章节就绪后再滚动
+  createEffect(
+    async () => {
+      const hash = location.hash;
+      await module;
+      return hash;
+    },
+    (hash) => {
+      const frame = requestAnimationFrame(() => {
+        if (hash) {
+          document.getElementById(hash.slice(1))?.scrollIntoView({
+            block: "start",
+          });
+        } else {
+          window.scrollTo({ top: 0 });
+        }
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+  );
 
   return (
     <>
@@ -120,23 +150,21 @@ function DocView(props: {
         activeId={activeId()}
         onNavigate={scrollToHeading}
       >
-        <ErrorBoundary
-          fallback={(error, reset) => (
+        <Errored
+          fallback={(err, reset) => (
             <div class="doc-load-error">
               <strong>这一章没有成功加载</strong>
-              <p>{error instanceof Error ? error.message : "未知错误"}</p>
+              <ErrorText err={err} />
               <button type="button" class="btn btn-ghost btn-sm" onClick={reset}>
                 重新加载
               </button>
             </div>
           )}
         >
-          <Suspense fallback={<DocSkeleton />}>
-            <Show when={content()}>
-              {(Page) => <Dynamic component={Page()} />}
-            </Show>
-          </Suspense>
-        </ErrorBoundary>
+          <Loading fallback={<DocSkeleton />}>
+            <Chapter />
+          </Loading>
+        </Errored>
       </DocsShell>
     </>
   );

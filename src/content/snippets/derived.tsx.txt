@@ -1,12 +1,23 @@
-import { createMemo, createSignal } from "solid-js";
+import { createMemo, createSignal, flush } from "solid-js";
 
 const [price, setPrice] = createSignal(128);
 const [quantity, setQuantity] = createSignal(2);
 
+// 第二个参数是 options，1.x 的 initialValue 位置已经没有了
 const total = createMemo(() => price() * quantity());
 
-// total() 只在 price 或 quantity 变化时重新计算
 console.log(total()); // 256
 
 setPrice(99);
-console.log(total()); // 198
+flush(); // 让这次写入提交
+console.log(total()); // 198，只有依赖变了才会重算
+
+// 默认用 === 比较结果；返回对象时用 equals 收成内容比较，
+// 下游（JSX 绑定、effect）才不会每轮都白跑一次
+const summary = createMemo(
+  () => ({ total: price() * quantity() }),
+  { equals: (a, b) => a.total === b.total }
+);
+
+// 昂贵又未必被读到：lazy 把第一次计算推迟到首次读取
+const report = createMemo(() => JSON.stringify(summary()), { lazy: true });

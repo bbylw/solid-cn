@@ -1,0 +1,12 @@
+import { createContext, useContext } from "solid-js";
+
+// 默认值形式只留给“静态回退”：主题、语言、一份冻结的配置
+const Locale = createContext<"zh-CN" | "en-US">("zh-CN");
+
+function Footer() {
+  const locale = useContext(Locale); // 没有任何 Provider 时拿到 "zh-CN"
+  return locale === "zh-CN" ? "© 2026 · Solid 中文文档" : "© 2026 Solid Docs";
+}
+
+// 载荷带响应式状态时不要给默认值：
+// 所有人都回退到的空 store，只会把“忘了放 Provider”变成一次静默的错误

@@ -1,0 +1,29 @@
+import { createEffect, createStore, deep, snapshot } from "solid-js";
+
+const [state, setState] = createStore({
+  user: { name: "林岚" },
+  prefs: { compact: false },
+});
+
+// snapshot：普通值，不建立订阅 —— 适合序列化，或交给只认普通对象的库
+const plain = snapshot(state);
+JSON.stringify(plain);
+
+// deep：订阅每一个嵌套属性，并把普通快照交给 apply 阶段。
+// 直接在 apply 阶段里读 state.prefs.compact 会收到 STRICT_READ_UNTRACKED 警告，
+// 因为它只取一次当前值，永远不会再跑。
+function PrefsSync() {
+  createEffect(
+    () => deep(state),
+    (current) => {
+      // current 是普通对象，可以放心 diff、上报、写存储
+      localStorage.setItem("prefs", JSON.stringify(current.prefs));
+    }
+  );
+  return null;
+}
+
+// 这一笔写入之后，effect 会带着新的普通值再跑一次
+setState((s) => {
+  s.prefs.compact = true;
+});

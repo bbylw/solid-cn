@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router";
 import { Title } from "@solidjs/meta";
 
 export default function NotFound() {
@@ -15,12 +14,12 @@ export default function NotFound() {
             地址可能写错了，或者这一章已经调整。回到文档总览，从现有章节继续读。
           </p>
           <div class="not-found-actions">
-            <A href="/docs" class="btn btn-primary">
+            <a href="/docs" class="btn btn-primary">
               打开文档总览
-            </A>
-            <A href="/" class="btn btn-ghost">
+            </a>
+            <a href="/" class="btn btn-ghost">
               返回首页
-            </A>
+            </a>
           </div>
         </div>
       </section>

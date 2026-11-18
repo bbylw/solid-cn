@@ -1,0 +1,44 @@
+import { Errored, For, Loading, Repeat, Reveal, Show, Switch, Match } from "solid-js";
+
+// 列表：默认按身份 keying，item 是值、index 是访问器
+<For each={todos()} fallback={<Empty />}>
+  {(todo, i) => <Row todo={todo} index={i()} />}
+</For>
+
+// 非 keying（替代 1.x 的 <Index>）：item 是访问器、index 是数字
+<For each={todos()} keyed={false}>
+  {(todo, i) => <Row todo={todo()} index={i} />}
+</For>
+
+// 定长区间，不做 diff
+<Repeat count={store.rows.length}>{(i) => <Cell row={store.rows[i]} />}</Repeat>
+
+// 条件：函数子节点拿到收窄后的访问器
+<Show when={user()} fallback={<Login />}>{(u) => <Profile user={u()} />}</Show>
+
+<Switch fallback={<NotFound />}>
+  <Match when={route() === "home"}>
+    <Home />
+  </Match>
+  <Match when={route() === "profile"}>{() => <Profile />}</Match>
+</Switch>
+
+// 异步边界（替代 <Suspense>）；on 是依赖列表，值变化会重新武装边界
+<Loading fallback={<Spinner />} on={id()}>
+  <Profile />
+</Loading>
+
+// 错误边界（替代 <ErrorBoundary>），自动恢复，reset 是重试
+<Errored fallback={(err, reset) => <button onClick={reset}>重试 {String(err())}</button>}>
+  <Page />
+</Errored>
+
+// 协调兄弟边界（替代 <SuspenseList>）
+<Reveal order="together">
+  <Loading fallback={<S />}>
+    <A />
+  </Loading>
+  <Loading fallback={<S />}>
+    <B />
+  </Loading>
+</Reveal>

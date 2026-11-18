@@ -1,0 +1,17 @@
+import { dynamic } from "@solidjs/web";
+
+function Panel(props: { editing: boolean; value: string }) {
+  // 工厂只创建一次，返回的是一个稳定的组件
+  const Active = dynamic(() => (props.editing ? Editor : Viewer));
+  return <Active value={props.value} />;
+}
+
+// 源也可以回答原生标签
+function Field(props: { multiline: boolean; value: string }) {
+  const Tag = dynamic(() => (props.multiline ? "textarea" : "input"));
+  return <Tag value={props.value} />;
+}
+
+// 1.x 的 <Dynamic component={...}> 在 2.0 里仍然可用，但已废弃：
+// 标签混在元素自己的 props 里，每个实例都要先 merge 再 omit。
+// 若源只会回答组件，用 solid-js 的 dynamicComponent，少保留一份元素运行时。

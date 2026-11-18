@@ -1,0 +1,39 @@
+import { createEffect, onCleanup } from "solid-js";
+
+// 1.x：<button use:tooltip={{ content: "保存" }} />
+// 2.0：<button ref={tooltip(() => "保存")} /> —— 指令就是一个返回回调的函数
+function tooltip(content: () => string) {
+  let el!: HTMLElement;
+
+  // setup 阶段（owned）：组件创建时运行。响应式原语和 onCleanup 放在这里，
+  // 此时还没有元素，不要做 DOM 写入
+  createEffect(content, (value) => {
+    if (el) el.title = value;
+  });
+
+  const ctrl = new AbortController();
+  onCleanup(() => ctrl.abort());
+
+  // apply 阶段（unowned）：元素到手时运行。只做 DOM 写入，不再创建原语
+  return (nextEl: HTMLElement) => {
+    el = nextEl;
+    el.title = content();
+    el.addEventListener("pointerenter", () => el.classList.add("tip-open"), { signal: ctrl.signal });
+  };
+}
+
+const autofocus = (el: HTMLElement) => el.focus();
+
+// 多个 ref / 指令用数组组合（数组可以嵌套）
+function SaveButton(props: { label: string }) {
+  return <button ref={[autofocus, tooltip(() => props.label)]}>{props.label}</button>;
+}
+
+// 需要原生监听器选项时，也写成 ref 回调（1.x 的 on:click / oncapture: 已移除）
+const on = (type: string, handler: () => void, options?: AddEventListenerOptions) => (
+  el: HTMLElement,
+) => el.addEventListener(type, handler, options);
+
+function Logged(props: { label: string }) {
+  return <button ref={on("click", () => console.log("clicked"), { capture: true })}>{props.label}</button>;
+}

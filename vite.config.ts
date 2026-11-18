@@ -1,5 +1,5 @@
 import { defineConfig } from "vite";
-import solid from "vite-plugin-solid";
+import solid from "@solidjs/vite-plugin";
 import { shikiHtml } from "./scripts/shiki-plugin";
 
 export default defineConfig({

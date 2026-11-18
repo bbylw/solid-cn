@@ -1,10 +1,10 @@
 import { For, Match, Show, Switch } from "solid-js";
 
 <Show when={user()} fallback={<p>请先登录</p>}>
-  <UserCard user={user()!} />
+  {(current) => <UserCard user={current()} />}
 </Show>
 
-<For each={todos()}>
+<For each={todos()} fallback={<p>暂无任务</p>}>
   {(todo) => <TodoItem todo={todo} />}
 </For>
 

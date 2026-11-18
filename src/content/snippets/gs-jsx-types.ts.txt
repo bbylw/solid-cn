@@ -1,0 +1,15 @@
+// JSX 类型来自渲染器包，组件类型来自 solid-js
+import type { Component, Element } from "solid-js";
+import type { ComponentProps, JSX } from "@solidjs/web";
+
+type ButtonProps = ComponentProps<"button"> & {
+  tone?: "solid" | "ghost";
+  children?: Element; // 渲染器无关的可返回值（1.x 写作 JSX.Element）
+  onClick?: JSX.EventHandlerUnion<HTMLButtonElement, MouseEvent>;
+};
+
+const Button: Component<ButtonProps> = (props) => (
+  <button class={["btn", props.class]} disabled={props.disabled}>
+    {props.children}
+  </button>
+);

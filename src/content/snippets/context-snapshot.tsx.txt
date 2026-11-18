@@ -1,10 +1,25 @@
-// 不要这样传：值是快照
-// 组件只运行一次，theme() 之后不会重新求值
-<ThemeContext.Provider value={theme()}>
-  {props.children}
-</ThemeContext.Provider>
+// 承接上一节的 theme（createSignal<Theme>("light") 的 getter）
 
-// 正确做法：传 accessor
-<ThemeContext.Provider value={theme}>
+// 不要这样传：组件只运行一次，value 被固定在提供的那一刻
+<ThemeContext value={theme()}>
   {props.children}
-</ThemeContext.Provider>
+</ThemeContext>
+
+// 正确：传读取方式（signal 的 getter），后代每次读都拿到当前值
+<ThemeContext value={theme}>
+  {props.children}
+</ThemeContext>
+
+// 载荷是对象时，把字段写成 getter，效果相同
+const UiContext = createContext<{ theme: Theme; locale: string }>();
+
+<UiContext
+  value={{
+    get theme() {
+      return theme();
+    },
+    locale: "zh-CN",
+  }}
+>
+  {props.children}
+</UiContext>
