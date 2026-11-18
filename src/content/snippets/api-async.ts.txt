@@ -1,0 +1,41 @@
+import {
+  action,
+  affects,
+  createDeferred,
+  createMemo,
+  isPending,
+  latest,
+  refresh,
+  resolve,
+  until
+} from "solid-js";
+
+// 异步就是"返回 Promise 的计算"，读取时未就绪就挂起，交给 <Loading>
+const user = createMemo(() => fetchUser(id()));
+
+// 服务端写入后重新取值；默认是"安静"的，同一问题的重取不算 pending
+refresh(user);
+
+// 想让这次重取显示为 pending：先声明它会影响谁
+affects(user);
+refresh(user);
+
+// 过渡期间：input 已改但结果还没落地
+const pending = isPending(() => user()); // true
+const next = latest(id); // 正在路上的输入值
+
+// 可能落后、但绝不抢跑的派生值
+const rows = createDeferred(() => fetchRows(period()));
+
+// 命令式等待
+const value = await resolve(() => user()); // 等这个表达式就绪
+const confirmed = await until(() => paid(), { timeout: 5000 }); // 等条件为真
+
+// 写操作：generator 里混合同步写入与异步等待
+const rename = action(function* (text: string) {
+  setStore((s) => {
+    s.user.name = text;
+  });
+  yield api.rename(text);
+  refresh(user);
+});

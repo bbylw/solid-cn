@@ -1,0 +1,25 @@
+import { createSignal } from "solid-js";
+
+const [active, setActive] = createSignal(false);
+const [muted] = createSignal(true);
+
+// 事件只认 camelCase：on + 大写字母开头
+// class 支持字符串、对象（按真假开关）、数组（拼接）；classList 已经没有了
+<button
+  type="button"
+  class={["btn", { "btn-active": active() }]}
+  tabindex={0}
+  onClick={() => setActive((value) => !value)}
+>
+  切换
+</button>;
+
+// 布尔属性按“存在／不存在”处理：true 加上，false 去掉
+<video muted={muted()} />;
+
+// 1.x 写法 → 2.0 写法
+// classList={{ active: x() }}   →  class={{ active: x() }} 或 class={["base", { active: x() }]}
+// onclick={fn}                  →  onClick={fn}（小写 on* 现在只是普通属性）
+// tabIndex={0}                  →  tabindex={0}
+// attr:role="button"            →  role="button"
+// on:click={fn}                 →  onClick={fn}，或用 ref 回调加原生监听器

@@ -1,18 +1,21 @@
-import { createEffect, createSignal, onCleanup } from "solid-js";
+import { createEffect, createSignal } from "solid-js";
 
 export function SearchField() {
   const [query, setQuery] = createSignal("");
 
-  createEffect(() => {
-    const controller = new AbortController();
+  createEffect(
+    () => query(),
+    (value) => {
+      const controller = new AbortController();
 
-    fetch(`/api/search?q=${encodeURIComponent(query())}`, {
-      signal: controller.signal,
-    });
+      fetch(`/api/search?q=${encodeURIComponent(value)}`, {
+        signal: controller.signal,
+      });
 
-    // 下一次查询开始前，中止上一次请求
-    onCleanup(() => controller.abort());
-  });
+      // 返回的函数在下一轮 apply 之前、或组件销毁时运行
+      return () => controller.abort();
+    }
+  );
 
   return (
     <input

@@ -1,16 +1,17 @@
-import { ErrorBoundary, Portal } from "solid-js/web";
+import { Errored } from "solid-js";
+import { Portal } from "@solidjs/web";
 
 <Portal mount={document.getElementById("overlay")!}>
   <dialog open>这段内容渲染到页面其他位置</dialog>
 </Portal>
 
-<ErrorBoundary
-  fallback={(error, reset) => (
+<Errored
+  fallback={(err, reset) => (
     <div role="alert">
-      <p>加载失败：{error.message}</p>
+      <p>渲染失败：{String(err())}</p>
       <button onClick={reset}>重试</button>
     </div>
   )}
 >
   <Article />
-</ErrorBoundary>
+</Errored>

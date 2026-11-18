@@ -1,5 +1,5 @@
-import { A } from "@solidjs/router";
-import { For, Show, type JSX } from "solid-js";
+import { For, Show } from "solid-js";
+import type { JSX } from "@solidjs/web";
 import {
   docs,
   docGroups,
@@ -11,20 +11,20 @@ import {
 function SidebarContent() {
   return (
     <>
-      <A href="/docs" class="sidebar-home" end>
+      <a href="/docs" class="sidebar-home">
         <span class="mono">Docs</span>
         <span>文档总览</span>
-      </A>
+      </a>
       <For each={docGroups}>
         {(group) => (
           <div class="sidebar-group">
             <p class="sidebar-group-title">{group.name}</p>
             <For each={group.docs}>
               {(item) => (
-                <A href={`/docs/${item.slug}`} class="sidebar-link">
+                <a href={`/docs/${item.slug}`} class="sidebar-link">
                   <span class="num">{item.chapter}</span>
                   <span>{item.navTitle}</span>
-                </A>
+                </a>
               )}
             </For>
           </div>
@@ -66,7 +66,7 @@ export function DocsShell(props: {
         </details>
 
         <nav class="doc-breadcrumb" aria-label="面包屑">
-          <A href="/docs">文档</A>
+          <a href="/docs">文档</a>
           <span class="slash">/</span>
           <span>{props.doc.group}</span>
           <span class="slash">/</span>
@@ -86,7 +86,7 @@ export function DocsShell(props: {
           <span class="dot" aria-hidden="true" />
           <span>阅读约 {props.doc.reading}</span>
           <span class="dot" aria-hidden="true" />
-          <span>基于 Solid 1.9</span>
+          <span>基于 Solid 2.0</span>
           <a href="https://docs.solidjs.com" target="_blank" rel="noreferrer">
             对照官方文档
           </a>
@@ -99,18 +99,18 @@ export function DocsShell(props: {
         <nav class="doc-pager" aria-label="章节翻页">
           <Show when={adjacent().previous}>
             {(prev) => (
-              <A href={`/docs/${prev().slug}`}>
+              <a href={`/docs/${prev().slug}`}>
                 <span class="doc-pager-label">上一篇 · 第 {prev().chapter} 章</span>
                 <span class="doc-pager-title">{prev().title}</span>
-              </A>
+              </a>
             )}
           </Show>
           <Show when={adjacent().next}>
             {(next) => (
-              <A href={`/docs/${next().slug}`} class="doc-pager-next">
+              <a href={`/docs/${next().slug}`} class="doc-pager-next">
                 <span class="doc-pager-label">下一篇 · 第 {next().chapter} 章</span>
                 <span class="doc-pager-title">{next().title}</span>
-              </A>
+              </a>
             )}
           </Show>
         </nav>
@@ -128,13 +128,15 @@ export function DocsShell(props: {
 
       <nav class="docs-toc" aria-label="本页目录">
         <p class="toc-title">本页内容</p>
+        {/* aria-current 始终写死一个值：路由 2.0 只接管自己写下的 aria-current，
+            这样这些 # 锚点链接就不会被它标成 "page"，滚动定位状态仍由 activeId 决定。 */}
         <For each={props.doc.headings}>
           {(heading) => (
             <a
               href={`#${heading.id}`}
               class="toc-link"
               data-depth={heading.depth}
-              aria-current={props.activeId === heading.id ? "true" : undefined}
+              aria-current={props.activeId === heading.id ? "true" : "false"}
               onClick={(event) => {
                 event.preventDefault();
                 props.onNavigate(heading.id);

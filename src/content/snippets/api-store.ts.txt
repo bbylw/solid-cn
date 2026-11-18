@@ -1,0 +1,22 @@
+import { createStore, deep, reconcile, snapshot } from "solid-js";
+
+const [store, setStore] = createStore({
+  user: { name: "A" },
+  todos: [] as { id: number; text: string }[],
+});
+
+// 草稿写法（默认、推荐）
+setStore((s) => {
+  s.user.name = "B";
+});
+
+// 返回新值：数组按下标替换 + length，对象只在顶层浅比较
+setStore((s) => s.todos.filter((t) => t.id !== 3));
+
+// 按 key 合并服务端数据，保留未变化项的身份
+setStore((s) => {
+  reconcile(serverTodos, "id")(s.todos);
+});
+
+snapshot(store); // 深拷贝为普通对象，用于 JSON / 请求体
+deep(store); // 在 effect compute 里对任意嵌套变化作出反应

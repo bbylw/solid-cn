@@ -1,4 +1,14 @@
-import { createResource, createSignal, For, Show } from "solid-js";
+import {
+  affects,
+  createMemo,
+  createSignal,
+  Errored,
+  For,
+  isPending,
+  Loading,
+  refresh,
+  Show,
+} from "solid-js";
 
 type Profile = {
   id: number;
@@ -36,29 +46,28 @@ const profiles: Record<number, Profile> = {
   },
 };
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms: number) => new Promise<void>((done) => setTimeout(done, ms));
 
 export function ResourceLab() {
   const [userId, setUserId] = createSignal(1);
-  const [shouldFail, setShouldFail] = createSignal(false);
-  const [requestCount, setRequestCount] = createSignal(0);
+  const [failMode, setFailMode] = createSignal(false);
 
-  const [profile, { refetch }] = createResource(userId, async (id) => {
-    setRequestCount((value) => value + 1);
+  async function fetchProfile(id: number) {
+    // 只有第一个 await 之前的读取会被跟踪：这里读一次失败开关，
+    // 于是切换开关就等于换了一次输入，自动重新取数。
+    const shouldFail = failMode();
     await sleep(650);
-    if (shouldFail()) {
-      throw new Error("演示：请求被主动拒绝");
-    }
+    if (shouldFail) throw new Error("演示：请求被主动拒绝");
     return profiles[id];
-  });
+  }
 
-  const failNext = () => {
-    setShouldFail((value) => !value);
-  };
+  const profile = createMemo(() => fetchProfile(userId()));
+  const updating = () => isPending(() => profile());
 
-  const retry = () => {
-    setShouldFail(false);
-    refetch();
+  const quietReload = () => refresh(profile);
+  const declaredReload = () => {
+    affects(profile);
+    refresh(profile);
   };
 
   return (
@@ -70,7 +79,7 @@ export function ResourceLab() {
               <button
                 type="button"
                 class="lab-step-btn"
-                aria-pressed={userId() === id}
+                aria-pressed={userId() === id ? "true" : "false"}
                 onClick={() => setUserId(id)}
               >
                 用户 {id}
@@ -82,82 +91,91 @@ export function ResourceLab() {
           <button
             type="button"
             class="lab-step-btn"
-            aria-pressed={shouldFail()}
-            onClick={failNext}
+            aria-pressed={failMode() ? "true" : "false"}
+            onClick={() => setFailMode((value) => !value)}
           >
-            {shouldFail() ? "恢复网络" : "模拟失败"}
+            {failMode() ? "恢复网络" : "模拟失败"}
           </button>
-          <button type="button" class="signal-btn label" onClick={retry}>
-            重新请求
+          <button type="button" class="lab-step-btn" onClick={quietReload}>
+            静默 refresh
+          </button>
+          <button type="button" class="signal-btn label" onClick={declaredReload}>
+            affects + refresh
           </button>
         </div>
       </div>
 
       <div class="resource-stage" aria-live="polite">
-        <Show
-          when={!profile.loading}
-          fallback={
-            <div class="resource-loading">
-              <span class="live-dot" />
-              正在请求 /api/users/{userId()}……
+        <Errored
+          fallback={(err) => (
+            <div class="resource-error" role="alert">
+              <strong>请求失败</strong>
+              <p>{String(err())}</p>
+              <p>
+                重新取数靠 <code>refresh</code>：新答案一落地，边界就自动愈合，
+                <code>reset</code> 只用来重试渲染期抛出的错误。
+              </p>
+              <button
+                type="button"
+                class="signal-btn label"
+                onClick={() => {
+                  setFailMode(false);
+                  refresh(profile);
+                }}
+              >
+                恢复网络并重试
+              </button>
             </div>
-          }
+          )}
         >
-          <Show
-            when={!profile.error}
+          <Loading
             fallback={
-              <div class="resource-error" role="alert">
-                <strong>请求失败</strong>
-                <p>
-                  {profile.error instanceof Error
-                    ? profile.error.message
-                    : "未知错误"}
-                </p>
-                <button type="button" class="signal-btn label" onClick={retry}>
-                  重试
-                </button>
+              <div class="resource-loading">
+                <span class="live-dot" />
+                正在载入 /api/users/{userId()}……
               </div>
             }
+            on={userId()}
           >
-            <Show
-              when={profile()}
-              fallback={<p class="flow-empty">这个用户暂时没有资料。</p>}
-            >
-              {(user) => (
-                <div class="profile-card">
-                  <div class="profile-head">
-                    <span class="profile-avatar" aria-hidden="true">
-                      {user().name.slice(0, 1)}
-                    </span>
-                    <div>
-                      <h4>{user().name}</h4>
-                      <p>
-                        {user().role} · {user().city}
-                      </p>
-                    </div>
-                    <span class="profile-id">id: {user().id}</span>
-                  </div>
-                  <p class="profile-intro">{user().intro}</p>
-                  <div class="profile-stats">
-                    <span>
-                      <b>{user().commits}</b>
-                      提交
-                    </span>
-                    <span>
-                      <b>{requestCount()}</b>
-                      请求次数
-                    </span>
-                  </div>
-                </div>
-              )}
+            <Show when={updating()}>
+              <div class="resource-loading">
+                <span class="live-dot" />
+                新的答案在路上，屏幕上还是上一份。
+              </div>
             </Show>
-          </Show>
-        </Show>
+            <div class="profile-card">
+              <div class="profile-head">
+                <span class="profile-avatar" aria-hidden="true">
+                  {profile().name.slice(0, 1)}
+                </span>
+                <div>
+                  <h4>{profile().name}</h4>
+                  <p>
+                    {profile().role} · {profile().city}
+                  </p>
+                </div>
+                <span class="profile-id">id: {profile().id}</span>
+              </div>
+              <p class="profile-intro">{profile().intro}</p>
+              <div class="profile-stats">
+                <span>
+                  <b>{profile().commits}</b>
+                  提交
+                </span>
+                <span>
+                  <b>{updating() ? "1" : "0"}</b>
+                  在途
+                </span>
+              </div>
+            </div>
+          </Loading>
+        </Errored>
       </div>
 
       <p class="resource-foot">
-        <code>createResource(userId, fetcher)</code>
-        会在 userId 变化时自动重新请求。加载、错误、空数据在这里都是普通分支。
+        <code>createMemo(() =&gt; fetchProfile(userId()))</code> 就是这次取数的全部代码：
+        首次载入交给 <code>Loading</code>，输入变化后的在途交给 <code>isPending</code>，
+        失败交给 <code>Errored</code>；<code>refresh</code> 安静，<code>affects</code> 才会点亮上面的指示器。
       </p>
     </div>
   );

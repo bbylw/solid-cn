@@ -1,13 +1,17 @@
-import { createStore, produce } from "solid-js/store";
+import { createStore } from "solid-js";
 
 const [state, setState] = createStore({
   draft: { title: "", tags: [] as string[] },
+  saving: false,
 });
 
-// 需要连续写入时，用 produce 在一次更新中完成
-setState(
-  produce((s) => {
-    s.draft.title = "细粒度响应式";
-    s.draft.tags.push("solid", "signals");
-  })
-);
+// 1.x：setState(produce((s) => { ... }))
+// 2.0：produce 已经不存在，草稿写入就是 setter 的默认形式
+setState((s) => {
+  s.draft.title = "细粒度响应式";
+  s.draft.tags.push("solid", "signals");
+  s.saving = true;
+});
+
+// 多次写入合成一次提交：这一轮里读到的仍是旧值，更新在微任务末尾一起落地
+console.log(state.draft.title); // "" —— 写入还没被看见

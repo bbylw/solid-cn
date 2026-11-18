@@ -1,8 +1,9 @@
-import type { JSX } from "solid-js";
+import type { Element } from "solid-js";
 
-function Welcome(props: { name: string }): JSX.Element {
+// 组件只是普通函数：挂载时运行一次，把结构搭好
+function Welcome(props: { name: string }): Element {
   return <h1>你好，{props.name}</h1>;
 }
 
-// 使用
-// <Welcome name="林岚" />
+// 使用：<Welcome name="林岚" />
+// 之后更新这一小块的，是编译器生成的绑定，不是重新执行的 Welcome。

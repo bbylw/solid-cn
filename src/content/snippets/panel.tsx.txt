@@ -1,10 +1,17 @@
-import type { JSX } from "solid-js";
+import { children, type Element } from "solid-js";
 
-function Panel(props: { title: string; children: JSX.Element }) {
+function Panel(props: { title: string; children: Element }) {
   return (
     <section class="panel">
       <h2>{props.title}</h2>
       <div class="panel-body">{props.children}</div>
     </section>
   );
+}
+
+// 需要重复使用同一段 children，或在 JavaScript 里检查它时，用 children() 解析并缓存
+function List(props: { children: Element }) {
+  const items = children(() => props.children);
+
+  return <ul>{items.toArray().map((item) => <li class="item">{item}</li>)}</ul>;
 }

@@ -1,11 +1,44 @@
-const [query, setQuery] = createSignal("");
-const [focused, setFocused] = createSignal(false);
+import { createSignal, untrack } from "solid-js";
 
+type NameFieldProps = { name: string; onCommit: (value: string) => void };
+
+// 2.0 的输入框不是严格受控：打字直接改 DOM，绑定只在表达式重新运行时写回。
+// 进行中的文本放在 draft 信号里（onInput），提交（onChange）再交给上层。
+function NameField(props: NameFieldProps) {
+  const [draft, setDraft] = createSignal(untrack(() => props.name));
+
+  return (
+    <input
+      value={draft()}
+      onInput={(event) => setDraft(event.currentTarget.value)}
+      onChange={() => props.onCommit(draft())}
+    />
+  );
+}
+
+const [digits, setDigits] = createSignal("");
+
+// 过滤或改写输入时，要把结果写回元素：值没变的信号不会重新写 DOM，
+// 被拒绝的那个字符会留在框里
 <input
-  value={query()}
-  onInput={(event) => setQuery(event.currentTarget.value)}
-  onFocus={() => setFocused(true)}
-  onBlur={() => setFocused(false)}
-  classList={{ "is-active": focused() }}
-  aria-label="搜索文档"
-/>
+  inputmode="numeric"
+  value={digits()}
+  onInput={(event) => {
+    const next = event.currentTarget.value.replace(/\D/g, "");
+    event.currentTarget.value = next;
+    setDigits(next);
+  }}
+/>;
+
+// 不需要响应式的值：用 defaultValue / defaultChecked 给初值，提交时读元素
+const [initialTitle] = createSignal("读书笔记");
+
+<form
+  onSubmit={(event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    console.log(data.get("title"));
+  }}
+>
+  <input name="title" defaultValue={initialTitle()} />
+</form>;

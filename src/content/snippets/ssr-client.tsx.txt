@@ -1,5 +1,6 @@
 // entry-client.tsx
-import { hydrate } from "solid-js/web";
+import { hydrate } from "@solidjs/web";
 import App from "./App";
 
-hydrate(() => <App />, document.getElementById("app")!);
+// 与服务端用同一份 App、同一组初始 props，只是渲染目标是已有 DOM
+hydrate(() => <App path={location.pathname} />, document.getElementById("app")!);

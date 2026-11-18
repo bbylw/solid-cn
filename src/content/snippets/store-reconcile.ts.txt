@@ -1,14 +1,20 @@
-import { createStore, reconcile } from "solid-js/store";
+import { createStore, reconcile } from "solid-js";
 
 type Todo = { id: number; title: string; done: boolean };
 
-const [todos, setTodos] = createStore({
-  items: [] as Todo[],
-});
+const [todos, setTodos] = createStore({ items: [] as Todo[] });
 
 async function refresh() {
-  const next: Todo[] = await fetch("/api/todos").then((res) => res.json());
+  const next: Todo[] = await fetch("/api/todos")
+    .then((res) => res.json());
 
-  // 按 id 对齐新旧数据，保留未变化项的引用
-  setTodos("items", reconcile(next, { key: "id" }));
+  // 1.x：setTodos("items", reconcile(next, { key: "id" }))
+  // 2.0：在草稿上点名要对齐的那一段
+  setTodos((s) => {
+    reconcile(next, "id")(s.items);
+  });
+
+  // key 也可以给函数，或给 null（按下标对齐，适合形状固定的轮询数据）
 }
+
+// 未变化的项保留原来的引用：只改了标题的那一行会通知，其余行不动

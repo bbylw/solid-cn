@@ -1,0 +1,17 @@
+import { createSignal } from "solid-js";
+
+const [source, setSource] = createSignal(1);
+
+// 传函数 = 可写派生信号：平时跟随来源，也允许手动改写
+const [doubled, setDoubled] = createSignal(() => source() * 2);
+
+doubled(); // 2
+setDoubled(100); // 改写不会重跑那个函数
+setSource(3); // 来源变了：提交后函数重新运行，并把刚才的写入当作 prev
+
+// 想「本地改过之后就不再跟随来源」，把这个判断写进函数，而不是往外回写
+const [note, setNote] = createSignal((prev = "") =>
+  prev.startsWith("本地") ? prev : `来源当前是 ${source()}`
+);
+
+setNote("本地草稿"); // 之后 source 再变，函数拿到的 prev 就是它，于是原样保留

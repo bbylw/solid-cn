@@ -1,31 +1,34 @@
-import { createContext, createSignal, useContext, type JSX } from "solid-js";
+import {
+  createContext,
+  createSignal,
+  useContext,
+  type Accessor,
+  type ParentProps,
+} from "solid-js";
 
 type Theme = "light" | "dark";
 
-// 默认值设为 undefined，方便检查调用方是否放错了位置
-const ThemeContext = createContext<() => Theme>();
+// 无默认值：<T> 就是载荷本身，useContext 的返回类型是 Accessor<Theme>
+// 没有 Provider 时运行时抛 ContextNotFoundError
+const ThemeContext = createContext<Accessor<Theme>>();
 
-export function ThemeProvider(props: { children: JSX.Element }) {
+export function ThemeProvider(props: ParentProps) {
   const [theme, setTheme] = createSignal<Theme>("light");
 
-  // 把 signal 本身放进 context，而不是 theme()
+  // 2.0：context 自己就是 Provider，写 <ThemeContext value={...}>
+  // 传的是 getter（theme），不是 theme()
   return (
-    <ThemeContext.Provider value={theme}>
-      {props.children}
-    </ThemeContext.Provider>
+    <>
+      <button onClick={() => setTheme((t) => (t === "light" ? "dark" : "light"))}>
+        切换主题
+      </button>
+      <ThemeContext value={theme}>{props.children}</ThemeContext>
+    </>
   );
 }
 
-export function useTheme() {
-  const theme = useContext(ThemeContext);
-  if (!theme) {
-    throw new Error("useTheme 必须在 ThemeProvider 内使用");
-  }
-  return theme;
-}
-
-// 消费方调用 accessor，主题变化时这里会更新
+// 消费方直接 useContext，不需要判空包装的 useTheme
 function ThemeBadge() {
-  const theme = useTheme();
+  const theme = useContext(ThemeContext);
   return <span>当前主题：{theme()}</span>;
 }

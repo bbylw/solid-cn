@@ -1,0 +1,24 @@
+import { createContext, useContext, For } from "solid-js";
+
+const TodosContext = createContext<TodosCtx>(); // 无默认值：没有 Provider 就抛错
+
+function App() {
+  // 上下文本身就是 Provider；在组件里创建，值按请求各一份
+  return (
+    <TodosContext value={createTodos()}>
+      <TodoList />
+    </TodosContext>
+  );
+}
+
+function TodoList() {
+  const [todos, { addTodo }] = useContext(TodosContext);
+  return (
+    <For each={todos()}>
+      {(todo) => <Row todo={todo} onAdd={() => addTodo(todo.text)} />}
+    </For>
+  );
+}
+
+// 只有原始值的兜底才用默认值形式
+const Theme = createContext<"light" | "dark">("light");

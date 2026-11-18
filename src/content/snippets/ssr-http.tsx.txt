@@ -1,0 +1,15 @@
+import { getRequestEvent, httpHeader, httpStatus } from "@solidjs/web";
+
+function NotFound() {
+  // 声明，不是改写：当前响应式作用域活着的时候，响应就是这个状态
+  httpStatus(404);
+  httpHeader("cache-control", "no-store");
+  return <h1>没有找到这个页面</h1>;
+}
+
+function Locale() {
+  const event = getRequestEvent(); // 客户端为 undefined
+  const locale = event?.request.headers.get("accept-language") ?? "zh-CN";
+  httpHeader("content-language", locale);
+  return <p>{locale}</p>;
+}

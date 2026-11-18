@@ -1,0 +1,21 @@
+import { affects, createMemo, latest, refresh } from "solid-js";
+
+const user = createMemo(() => fetchUser(id()));
+
+// 静默重取：再问同一个问题，isPending 保持 false，新值到点自动替换
+const checkUpdate = () => refresh(user);
+
+// 声明在途：affects 之后，这次重取会被 isPending 读到
+const reload = () => {
+  affects(user);
+  refresh(user);
+};
+
+// refresh 返回“目标下一次静默”的 Promise，需要顺序时才 await
+async function reloadThenGo() {
+  const fresh = await refresh(user);
+  goTo(`/users/${fresh.id}`);
+}
+
+// latest 窥看在途值：过渡期间读到已经换上的 id，而不是屏幕上那份
+const heading = () => `用户 ${latest(id)}`;

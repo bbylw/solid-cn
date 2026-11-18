@@ -2,9 +2,12 @@ import { createSignal } from "solid-js";
 
 const [count, setCount] = createSignal(0);
 
-count();                       // 0，调用 getter 读取
-setCount(1);                   // 直接写入
-setCount((prev) => prev + 1);  // 基于前值更新
+count(); // 0，读取要调用 getter
+setCount(1); // 写入排队，提交后才是新值
+setCount((prev) => prev + 1); // 基于当前值更新
+
+const [greeting, setGreeting] = createSignal("你好");
+setGreeting("你好"); // 与旧值 === 相同，不通知任何人
 
 const [todos, setTodos] = createSignal<string[]>([]);
-setTodos((list) => [...list, "读文档"]); // 对象/数组请整体替换
+setTodos((list) => [...list, "读文档"]); // 数组/对象请整体替换

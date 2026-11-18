@@ -1,7 +1,31 @@
 // entry-server.tsx
-import { renderToString } from "solid-js/web";
+import { HydrationScript, renderToString } from "@solidjs/web";
 import App from "./App";
 
-export function render() {
-  return renderToString(() => <App />);
+function Document(props: { path: string }) {
+  return (
+    <html lang="zh-CN">
+      <head>
+        <meta charset="utf-8" />
+        <title>我的应用</title>
+        {/* 水合脚本必须出现在应用标记之前 */}
+        <HydrationScript />
+      </head>
+      <body>
+        <div id="app">
+          <App path={props.path} />
+        </div>
+        {/* 入口脚本不能是 async：它必须在记录脚本之后执行 */}
+        <script type="module" src="/src/entry-client.tsx" defer />
+      </body>
+    </html>
+  );
+}
+
+export function handler(request: Request): Response {
+  const path = new URL(request.url).pathname;
+  const html = renderToString(() => <Document path={path} />);
+  return new Response(html, {
+    headers: { "content-type": "text/html; charset=utf-8" },
+  });
 }

@@ -1,0 +1,38 @@
+import { action, createOptimistic, createOptimisticStore, refresh, until } from "solid-js";
+
+type Todo = { clientId: string; text: string; done: boolean };
+
+// 源数据与乐观覆盖层挂在同一个 store 上：过渡结束（成功或失败）时覆盖层退回源数据
+const [todos, setOptimisticTodos] = createOptimisticStore<{ list: Todo[] }>(
+  () => api.getTodos().then((list) => ({ list })),
+  { list: [] }
+);
+// 过程标记（“保存中”、禁用按钮）用乐观信号，随过渡自动回退，不要拿 isPending 当它用
+const [saving, setSaving] = createOptimistic(false);
+
+// 新增一条：乐观写入 → 服务端写入 → refresh 对齐权威数据
+const addTodo = action(function* (text: string) {
+  const clientId = crypto.randomUUID();
+  setOptimisticTodos((s) => {
+    s.list.push({ clientId, text, done: false });
+  });
+  setSaving(true);
+  yield api.addTodo({ clientId, text });
+  refresh(todos);
+});
+
+// 确认走 socket、不在这次请求的响应里时，用 until 押住过渡
+const send = action(function* (text: string) {
+  const clientId = crypto.randomUUID();
+  setOptimisticTodos((s) => {
+    s.list.push({ clientId, text, done: false });
+  });
+  yield socket.send({ clientId, text });
+  yield until(
+    () => todos.list.some((t) => t.clientId === clientId),
+    { timeout: 10_000 }
+  );
+});
+
+// 界面里：<Show when={saving()}>保存中……</Show>；失败时 action 抛出，
+// 乐观写入自动回滚，不需要手写“恢复旧值”。

@@ -1,5 +1,5 @@
 import { useNavigate } from "@solidjs/router";
-import { Portal } from "solid-js/web";
+import { Portal } from "@solidjs/web";
 import {
   createEffect,
   createMemo,
@@ -7,7 +7,7 @@ import {
   For,
   Show,
 } from "solid-js";
-import Search from "lucide-solid/icons/search";
+import { Search } from "./Icons";
 import { searchDocs, type SearchResult } from "../lib/search";
 import { searchOpen, setSearchOpen } from "../lib/ui-state";
 
@@ -75,12 +75,17 @@ export function SearchDialog() {
     });
   };
 
-  createEffect(() => {
-    if (searchOpen()) {
+  // 拆分式 effect：compute 追踪开关，apply 负责记录焦点并聚焦输入框，
+  // 返回的清理函数会在下一次运行或销毁前取消尚未执行的 rAF
+  createEffect(
+    () => searchOpen(),
+    (open) => {
+      if (!open) return;
       previousFocus = document.activeElement as HTMLElement | null;
-      requestAnimationFrame(() => inputRef?.focus());
+      const frame = requestAnimationFrame(() => inputRef?.focus());
+      return () => cancelAnimationFrame(frame);
     }
-  });
+  );
 
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.key === "Escape") {
@@ -178,8 +183,8 @@ export function SearchDialog() {
                       class="search-result"
                       id={`search-option-${index()}`}
                       role="option"
-                      aria-selected={active() === index()}
-                      data-active={active() === index()}
+                      aria-selected={active() === index() ? "true" : "false"}
+                      data-active={active() === index() ? "true" : undefined}
                       onMouseMove={() => setActive(index())}
                       onClick={() => go(result)}
                     >

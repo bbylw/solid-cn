@@ -24,8 +24,9 @@ SOFTWARE.
 
 来源说明（Attribution note）
 
-本仓库中的文档内容整理、翻译自 Solid 官方文档（https://docs.solidjs.com）
-与 solidjs/solid 的 README（https://github.com/solidjs/solid）。
+本仓库中的文档内容整理、翻译自 Solid 官方文档（https://docs.solidjs.com）、
+solidjs/solid 的 README（https://github.com/solidjs/solid）以及仓库内的
+Solid 2.0 设计文档与迁移指南（documentation/solid-2.0/）。
 
 Solid 由 Ryan Carniato 与 SolidJS 社区贡献者编写，以 MIT 许可证发布
 （https://github.com/solidjs/solid/blob/main/LICENSE）。本仓库的翻译与

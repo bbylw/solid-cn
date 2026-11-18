@@ -1,0 +1,26 @@
+import { createEffect, createMemo, createSignal } from "solid-js";
+
+const [status, setStatus] = createSignal("idle");
+
+// ❌ 判断写在 compute 里：status 每提交一次，apply 和上一轮的清理都会再跑，
+// 哪怕结果还是 true —— 定时器会被反复拆掉重建
+createEffect(
+  () => status() === "active",
+  (active) => {
+    if (!active) return;
+    const id = setInterval(() => console.log("轮询一次"), 1000);
+    return () => clearInterval(id);
+  }
+);
+
+// ✅ 前面加一层 memo 当闸门：equals 判定相同就不通知下游，effect 完全不重跑
+const active = createMemo(() => status() === "active");
+
+createEffect(
+  () => active(),
+  (value) => {
+    if (!value) return;
+    const id = setInterval(() => console.log("轮询一次"), 1000);
+    return () => clearInterval(id);
+  }
+);

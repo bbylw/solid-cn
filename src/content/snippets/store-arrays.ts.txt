@@ -1,16 +1,40 @@
-import { createStore } from "solid-js/store";
+import { createStore } from "solid-js";
+
+type Todo = {
+  id: number;
+  title: string;
+  done: boolean;
+  archived?: boolean;
+};
 
 const [state, setState] = createStore({
   todos: [
     { id: 1, title: "读快速开始", done: true },
     { id: 2, title: "写第一个信号", done: true },
     { id: 3, title: "理解派生值", done: false },
-  ],
+  ] as Todo[],
 });
 
-// 只更新第三项的完成状态
-setState("todos", 2, "done", true);
+// 按下标改一项（1.x：setState("todos", 2, "done", true)）
+setState((s) => {
+  s.todos[2].done = true;
+});
 
-// 新增与删除通过新数组完成
-setState("todos", (list) => [...list, { id: 4, title: "读 store 文档", done: false }]);
-setState("todos", (list) => list.filter((todo) => todo.id !== 1));
+// 按条件批量写（1.x：setState("todos", (t) => t.done, "archived", true)）
+setState((s) => {
+  for (const todo of s.todos) if (todo.done) todo.archived = true;
+});
+
+// 区间批量写（1.x：setState("todos", { from: 0, to: 1 }, "done", true)）就是普通循环
+setState((s) => {
+  for (let i = 0; i <= 1; i += 1) s.todos[i].done = true;
+});
+
+// 新增与删除：草稿上直接用数组方法
+setState((s) => {
+  s.todos.push({ id: 4, title: "读 store 文档", done: false });
+  s.todos.splice(0, 1);
+});
+
+// 需要一份过滤后的新数组时，把结果返回给 setter
+setState((s) => ({ ...s, todos: s.todos.filter((todo) => !todo.archived) }));

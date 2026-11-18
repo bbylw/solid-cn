@@ -1,0 +1,38 @@
+import { Errored, Loading, Reveal } from "solid-js";
+
+// Loading 取代 Suspense：子树里有未就绪的异步读取时显示 fallback
+// on 是依赖清单，它读的东西一变，边界就重新落回 fallback
+<Loading fallback={<ProfileSkeleton />} on={id()}>
+  <Profile id={id()} />
+</Loading>
+
+// Reveal 取代 SuspenseList：协调同级 Loading 的出场顺序
+// order 可选 "sequential"（默认）、"together"、"natural"
+// collapsed 只在 sequential 下生效：越过前沿的兄弟连 fallback 都不渲染
+<Reveal collapsed>
+  <Loading fallback={<HeaderSkeleton />}>
+    <ProfileHeader />
+  </Loading>
+  <Loading fallback={<PostsSkeleton />}>
+    <Posts />
+  </Loading>
+</Reveal>
+
+// Errored 取代 ErrorBoundary：fallback 收到的是错误 accessor 与 reset
+<Errored
+  fallback={(err, reset) => (
+    <div role="alert">
+      <p>这一屏没渲染出来：{String(err())}</p>
+      <button onClick={reset}>重试</button>
+    </div>
+  )}
+>
+  <Reveal order="together">
+    <Loading fallback={<HeaderSkeleton />}>
+      <ProfileHeader />
+    </Loading>
+    <Loading fallback={<PostsSkeleton />}>
+      <Posts />
+    </Loading>
+  </Reveal>
+</Errored>

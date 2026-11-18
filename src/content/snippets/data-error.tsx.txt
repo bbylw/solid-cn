@@ -1,0 +1,26 @@
+import { createMemo, Errored, refresh } from "solid-js";
+
+const user = createMemo(() => fetchUser(id()));
+
+// 2.0 只有一条错误路径：异步计算的 rejection 顺着依赖图落到最近的 <Errored>
+<Errored
+  fallback={(err) => (
+    <div role="alert">
+      <p>读不到这个用户：{String(err())}</p>
+      {/* 请求失败用 refresh 重新发起；渲染期抛出的错误才用 fallback 的第二个参数 reset */}
+      <button onClick={() => refresh(user)}>重试</button>
+    </div>
+  )}
+>
+  <Profile user={user()} />
+</Errored>
+
+// 边界一旦重新渲染出内容就自动愈合，不需要 1.x 的 resetErrorBoundaries。
+// 想在渲染之外处理失败，用 createEffect 的 error 分支：
+createEffect(
+  () => risky(),
+  {
+    effect: (value) => log(value),
+    error: (err) => report(err),
+  }
+);

@@ -1,8 +1,9 @@
 import { createSignal } from "solid-js";
-import { template, delegateEvents, insert, render } from "solid-js/web";
+// 2.0 起，DOM 运行时从 solid-js/web 挪到了独立的 @solidjs/web
+import { template, delegateEvents, insert } from "@solidjs/web";
 
-// 静态 HTML 在编译期被提取，只创建一次
-const _tmpl$ = template(`<button>点击次数：<!> · 双倍：<!></button>`);
+// 静态部分在编译期被提取成一段模板，整页只创建一次
+const _tmpl$ = /*#__PURE__*/ template(`<button>点击次数：<!> · 双倍：<!></button>`);
 
 function Counter() {
   const [count, setCount] = createSignal(0);
@@ -10,14 +11,14 @@ function Counter() {
 
   return (() => {
     const _el$ = _tmpl$();
-    _el$.$$click = () => setCount((c) => c + 1);
+    // 事件是编译期展开的字段，配合下面的 delegateEvents 做根节点代理
+    _el$._$$click = () => setCount((c) => c + 1);
 
-    // 只有这两个文本节点会被精确更新
+    // 每个动态表达式一个绑定，各自只更新自己那一个文本节点
     insert(_el$, count);
     insert(_el$, doubleCount);
     return _el$;
   })();
 }
 
-render(Counter, document.getElementById("app")!);
 delegateEvents(["click"]);

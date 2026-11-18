@@ -1,4 +1,5 @@
-import { createSignal, For, onCleanup, Show, type JSX } from "solid-js";
+import { createSignal, For, onCleanup, Show, untrack } from "solid-js";
+import type { JSX } from "@solidjs/web";
 
 export type ShikiSnippet = {
   html: string;
@@ -83,7 +84,10 @@ export function SnippetTabs(props: {
   label: string;
   tone?: "light";
 }) {
-  const [active, setActive] = createSignal(props.tabs[0]?.id ?? "");
+  // 2.0 不建议在组件函数体顶层读响应式 props：默认页签只取一次，用 untrack 标明意图
+  const [active, setActive] = createSignal(
+    untrack(() => props.tabs[0]?.id ?? "")
+  );
   const current = () =>
     props.tabs.find((tab) => tab.id === active()) ?? props.tabs[0];
 
@@ -101,7 +105,7 @@ export function SnippetTabs(props: {
               type="button"
               role="tab"
               class="tab"
-              aria-selected={active() === tab.id}
+              aria-selected={active() === tab.id ? "true" : "false"}
               onClick={() => setActive(tab.id)}
             >
               {tab.label}

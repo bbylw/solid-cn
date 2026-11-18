@@ -1,0 +1,11 @@
+import { clientOnly } from "@solidjs/web";
+
+const WorldMap = clientOnly(() => import("./Map"));
+
+// { lazy: true }：连 import 都推迟到首次渲染
+const Panel = clientOnly(() => import("./Panel"), { lazy: true });
+
+function Page() {
+  // 服务端只渲染 fallback，浏览器挂载后才换成真实组件
+  return <WorldMap fallback={<MapSkeleton />} zoom={12} />;
+}

@@ -1,0 +1,8 @@
+// keyed={fn}：用业务字段做 key，两个参数都是 accessor
+<For each={todos()} keyed={(todo) => todo.id}>
+  {(todo, i) => <TodoRow todo={todo()} index={i()} />}
+</For>
+
+// keyed 模式尽量写成字面量：keyed={cond()} 会让回调参数形状变得不确定，
+// 编译器无法判断第一个参数到底是原始值还是 accessor。
+// 每次请求都得到全新对象、又不想改回调形状时，用 reconcile 把新数据对齐到旧 store。

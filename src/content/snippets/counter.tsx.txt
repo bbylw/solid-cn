@@ -7,6 +7,7 @@ function Counter() {
   console.log("函数体只运行一次……");
 
   return (
+    // 写入只负责排队，真正的更新在微任务结束时统一提交
     <button onClick={() => setCount((c) => c + 1)}>
       点击次数：{count()} · 双倍：{doubleCount()}
     </button>

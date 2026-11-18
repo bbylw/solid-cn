@@ -1,0 +1,9 @@
+// 默认（等价于 keyed={true}）：按引用识别每一项
+// 第一个参数是原始值，第二个参数是索引 accessor
+<For each={todos()}>
+  {(todo, i) => <TodoRow todo={todo} index={i()} />}
+</For>
+
+<For each={todos()} keyed={true} fallback={<Empty />}>
+  {(todo, i) => <TodoRow todo={todo} index={i()} />}
+</For>

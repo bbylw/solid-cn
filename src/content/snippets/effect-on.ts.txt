@@ -1,13 +1,34 @@
-import { createEffect, createSignal, on, untrack } from "solid-js";
+import { createEffect, createSignal, untrack } from "solid-js";
 
 const [userId, setUserId] = createSignal(1);
-const [token, setToken] = createSignal("local-token");
+const [token] = createSignal("local-token");
 
+// 1.x 的 on(userId, fn)：2.0 里 compute 就是那份显式的依赖声明
 createEffect(
-  on(userId, (id) => {
-    // userId 变化时重新执行；on 默认在创建时也会先执行一次，
-    // 传 { defer: true } 可跳过首次。
-    // token 在这里只是读取当前值，不建立订阅。
+  () => userId(),
+  (id) => {
+    // 只想拿当前值、不订阅的来源，用 untrack 包起来
     console.log("加载用户", id, "凭证", untrack(token));
-  })
+  }
 );
+
+// 多个来源：在 compute 里组装成一个值
+createEffect(
+  () => [userId(), token()],
+  ([id, tk]) => console.log(id, tk)
+);
+
+// 跳过首次执行：defer 挪到了第三个参数
+createEffect(
+  () => userId(),
+  (id) => console.log("变为", id),
+  { defer: true }
+);
+
+// compute 的第一个参数是上一轮的结果（首次为 undefined），用默认值给起点
+createEffect(
+  (prev = 0) => userId(),
+  (value, prev) => console.log(`从 ${prev} 变成 ${value}`)
+);
+
+setUserId(2); // 写入仍然排队；提交之后，上面这些 effect 才一起跑

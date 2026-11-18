@@ -1,4 +1,4 @@
-import { createSignal, For, Match, Show, Switch } from "solid-js";
+import { createSignal, For, Match, Repeat, Show, Switch, createStore } from "solid-js";
 
 type Status = "idle" | "loading" | "error" | "ready";
 
@@ -9,20 +9,40 @@ const statusLabels: Record<Status, string> = {
   ready: "就绪",
 };
 
-const initialTasks = ["整理文档提纲", "补全交互演示", "检查移动端布局"];
+type Task = { id: number; text: string; hits: number };
+
+// 普通变量，不是响应式状态：只在事件处理函数里读写
+let nextId = 4;
 
 export function ControlFlowLab() {
   const [status, setStatus] = createSignal<Status>("ready");
-  const [tasks, setTasks] = createSignal(initialTasks);
-  const [counter, setCounter] = createSignal(0);
+  const [rows, setRows] = createStore({
+    tasks: [
+      { id: 1, text: "整理文档提纲", hits: 0 },
+      { id: 2, text: "补全交互演示", hits: 0 },
+      { id: 3, text: "检查移动端布局", hits: 0 },
+    ] as Task[],
+  });
 
   const addTask = () => {
-    setCounter((value) => value + 1);
-    setTasks((list) => [...list, `新任务 ${counter()}`]);
+    const id = nextId++;
+    setRows((s) => {
+      s.tasks.push({ id, text: `新任务 ${id}`, hits: 0 });
+    });
   };
 
-  const removeTask = (task: string) => {
-    setTasks((list) => list.filter((item) => item !== task));
+  const bumpTask = (id: number) => {
+    setRows((s) => {
+      const task = s.tasks.find((item) => item.id === id);
+      if (task) task.hits += 1;
+    });
+  };
+
+  const removeTask = (id: number) => {
+    setRows((s) => {
+      const index = s.tasks.findIndex((item) => item.id === id);
+      if (index >= 0) s.tasks.splice(index, 1);
+    });
   };
 
   return (
@@ -35,7 +55,7 @@ export function ControlFlowLab() {
               <button
                 type="button"
                 class="lab-step-btn"
-                aria-pressed={status() === value}
+                aria-pressed={status() === value ? "true" : "false"}
                 onClick={() => setStatus(value)}
               >
                 {statusLabels[value]}
@@ -54,43 +74,71 @@ export function ControlFlowLab() {
             <p>正在加载数据，界面只替换这一个分支。</p>
           </Match>
           <Match when={status() === "error"}>
-            <p>请求失败。ErrorBoundary 可以在这里接住抛出的异常。</p>
+            <p>
+              请求失败。同样的位置换成 <code>Errored</code> 边界，接住的就是异步读出的异常。
+            </p>
           </Match>
           <Match when={status() === "ready"}>
-            <p>内容已就绪，其余分支不会被创建。</p>
+            <p>内容已就绪，其余分支没有被创建。</p>
           </Match>
         </Switch>
       </div>
 
       <div class="flow-list-head">
-        <span>For / 列表</span>
+        <span>For · 默认 keyed（按引用）</span>
         <button type="button" class="signal-btn label" onClick={addTask}>
           新增任务
         </button>
       </div>
 
       <Show
-        when={tasks().length > 0}
+        when={rows.tasks.length > 0}
         fallback={<p class="flow-empty">列表为空。这是 Show 的 fallback 分支。</p>}
       >
         <ul class="flow-list">
-          <For each={tasks()}>
+          <For each={rows.tasks}>
             {(task) => (
               <li>
-                <span>{task}</span>
-                <button
-                  type="button"
-                  class="flow-remove"
-                  onClick={() => removeTask(task)}
-                  aria-label={`移除 ${task}`}
-                >
-                  移除
-                </button>
+                <span>
+                  {task.text} · 命中 {task.hits}
+                </span>
+                <span class="flow-buttons">
+                  <button type="button" class="flow-remove" onClick={() => bumpTask(task.id)}>
+                    命中 +1
+                  </button>
+                  <button
+                    type="button"
+                    class="flow-remove"
+                    onClick={() => removeTask(task.id)}
+                    aria-label={`移除 ${task.text}`}
+                  >
+                    移除
+                  </button>
+                </span>
               </li>
             )}
           </For>
         </ul>
       </Show>
+
+      <div class="flow-list-head">
+        <span>Repeat · 同一个 store，按位置取</span>
+      </div>
+      <ul class="flow-list">
+        <Repeat
+          count={rows.tasks.length}
+          fallback={<p class="flow-empty">Repeat 的 count 为 0，这里轮到 fallback。</p>}
+        >
+          {(i) => (
+            <li>
+              <span>
+                槽位 {i}：{rows.tasks[i]?.text ?? "这一槽已回收"}
+              </span>
+              <span class="profile-id">hits {rows.tasks[i]?.hits ?? 0}</span>
+            </li>
+          )}
+        </Repeat>
+      </ul>
     </div>
   );
 }

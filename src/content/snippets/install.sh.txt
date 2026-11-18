@@ -1,5 +1,5 @@
-# 运行时
-npm install solid-js
+# 运行时：核心 + Web 渲染器
+npm install solid-js @solidjs/web
 
-# JSX 编译（Babel 方案）
-npm install --save-dev babel-preset-solid
+# 构建工具：Vite 与 Solid 插件
+npm install --save-dev vite @solidjs/vite-plugin

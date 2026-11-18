@@ -1,0 +1,5 @@
+// keyed={false}：按位置识别，原来的 <Index> 写法
+// 第一个参数是项 accessor，第二个参数是稳定的数字索引
+<For each={todos()} keyed={false}>
+  {(todo, i) => <TodoRow todo={todo()} index={i} />}
+</For>

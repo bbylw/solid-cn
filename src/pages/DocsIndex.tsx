@@ -1,4 +1,3 @@
-import { A } from "@solidjs/router";
 import { Title, Meta } from "@solidjs/meta";
 import { For } from "solid-js";
 import { docs, docGroups } from "../data/docs";
@@ -48,7 +47,7 @@ export default function DocsIndex() {
               <span class="mono">{String(docs.length).padStart(2, "0")} CHAPTERS</span>
               <span>4 个部分</span>
               <span>约 66 分钟</span>
-              <span>基于 Solid 1.9</span>
+              <span>基于 Solid 2.0</span>
             </div>
           </header>
 
@@ -69,7 +68,7 @@ export default function DocsIndex() {
                   </div>
                   <For each={group.docs}>
                     {(doc) => (
-                      <A href={`/docs/${doc.slug}`} class="chapter-row">
+                      <a href={`/docs/${doc.slug}`} class="chapter-row">
                         <span class="chapter-num">{doc.chapter}</span>
                         <span>
                           <span class="chapter-title">{doc.title}</span>
@@ -78,7 +77,7 @@ export default function DocsIndex() {
                         <span class="chapter-reading">
                           {doc.level} · {doc.reading}
                         </span>
-                      </A>
+                      </a>
                     )}
                   </For>
                 </div>
